@@ -1,4 +1,4 @@
-package com.restaurant.finder.model.Restaurant;
+package com.restaurant.finder.model.Restaurant.Utilities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

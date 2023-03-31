@@ -38,9 +38,19 @@ public class RestaurantController {
 
 	}
 
-	@GetMapping("restaurants/{placeId}")
-	public void getRestaurant(@PathVariable("placeId") String placeId) {
+	@GetMapping("/restaurants/search/autoSuggest")
+	public Restaurant getAutoSuggestedRestaurants(@RequestParam(name = "lat", required = true) String lat,
+			@RequestParam(name = "lng", required = true) String lng,
+			@RequestParam(name = "keyword", required = true) String keyword,
+			@RequestParam(name = "radius", required = true) String radius) {
 
+		return restaurantService.getAutoSuggestedRestaurants(lat, lng, keyword, radius);
+
+	}
+
+	@GetMapping("restaurant/{placeId}")
+	public Restaurant getRestaurant(@PathVariable("placeId") String placeId) {
+		return restaurantService.getRestaurantByPlaceId(placeId);
 	}
 
 

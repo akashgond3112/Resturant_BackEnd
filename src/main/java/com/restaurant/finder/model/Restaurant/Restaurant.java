@@ -3,6 +3,7 @@ package com.restaurant.finder.model.Restaurant;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,45 +15,18 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Value()
 public class Restaurant {
 	@JsonProperty("html_attributions")
-	private List<String> htmlAttributions = new ArrayList<String>();
+	List<String> htmlAttributions = new ArrayList<String>();
 
-	@JsonProperty("next_page_token")
-	private String nextPageToken;
+	@JsonProperty(value = "next_page_token" , required = false)
+	String nextPageToken;
 
-	private List<Result> results = new ArrayList<Result>();
-	private String status;
+	@JsonProperty(value = "results" , required = false)
+	List<Result> results = new ArrayList<Result>();
+	@JsonProperty(value = "result" , required = false)
+	Result result = new Result();
+	String status;
 
-	public List<String> getHtmlAttributions() {
-		return htmlAttributions;
-	}
-
-	public void setHtmlAttributions(List<String> htmlAttributions) {
-		this.htmlAttributions = htmlAttributions;
-	}
-
-	public String getNextPageToken() {
-		return nextPageToken;
-	}
-
-	public void setNextPageToken(String nextPageToken) {
-		this.nextPageToken = nextPageToken;
-	}
-
-	public List<Result> getResults() {
-		return results;
-	}
-
-	public void setResults(List<Result> results) {
-		this.results = results;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
 }

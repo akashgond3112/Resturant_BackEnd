@@ -15,6 +15,8 @@ public interface RestaurantService {
 
 	public Restaurant getAllNearByRestaurants(String lat, String lng, String query, String radius, String pageToken);
 
-	public void getRestaurantByPlaceId(String placeId);
+	public Restaurant getAutoSuggestedRestaurants(String lat, String lng, String keyword, String radius);
+
+	public Restaurant getRestaurantByPlaceId(String placeId);
 
 }

@@ -1,4 +1,7 @@
-package com.restaurant.finder.model.Restaurant;
+package com.restaurant.finder.model.Restaurant.Utilities;
+
+import com.restaurant.finder.model.Restaurant.Location.Northeast;
+import com.restaurant.finder.model.Restaurant.Location.Southwest;
 
 /**
  * @author akash.gond

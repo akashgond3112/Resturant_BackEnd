@@ -1,4 +1,4 @@
-package com.restaurant.finder.model.Restaurant;
+package com.restaurant.finder.model.Restaurant.Photo;
 
 import java.util.ArrayList;
 import java.util.List;

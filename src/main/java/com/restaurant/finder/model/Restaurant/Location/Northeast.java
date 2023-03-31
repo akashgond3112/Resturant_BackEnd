@@ -1,4 +1,4 @@
-package com.restaurant.finder.model.Restaurant;
+package com.restaurant.finder.model.Restaurant.Location;
 
 /**
  * @author akash.gond

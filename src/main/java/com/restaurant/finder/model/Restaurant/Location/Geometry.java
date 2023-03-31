@@ -1,4 +1,6 @@
-package com.restaurant.finder.model.Restaurant;
+package com.restaurant.finder.model.Restaurant.Location;
+
+import com.restaurant.finder.model.Restaurant.Utilities.Viewport;
 
 /**
  * @author akash.gond
