@@ -1,10 +1,6 @@
-package com.restaurant.finder.service;
-
-import org.springframework.http.HttpHeaders;
+package com.restaurant.finder.service.restaurant;
 
 import com.restaurant.finder.model.Restaurant.Restaurant;
-import com.restaurant.finder.model.Restaurant.Result;
-import org.springframework.http.ResponseEntity;
 
 /**
  * @author akash.gond

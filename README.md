@@ -52,4 +52,22 @@ CREATE TABLE review_comments (
                                  FOREIGN KEY (review_id) REFERENCES reviews(id)
 );
 
+// update 
+
+alter table review_comments
+drop foreign key review_comments_ibfk_2;
+
+alter table review_comments
+add constraint review_comments_ibfk_2
+foreign key (review_id) references reviews (id)
+on delete cascade;
+
+alter table review_likes
+drop foreign key review_likes_ibfk_2;
+
+alter table review_likes
+add constraint review_likes_ibfk_2
+foreign key (review_id) references reviews (id)
+on delete cascade;
+
 

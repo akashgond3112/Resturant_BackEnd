@@ -1,5 +1,6 @@
-package com.restaurant.finder.service;
+package com.restaurant.finder.service.restaurant.review;
 
+import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.ReviewLike;
@@ -13,11 +14,11 @@ import java.util.List;
  * Copyright (C) 2023 Newcastle University, UK
  */
 public interface ReviewService {
-    Review saveReview(Long userId, Review restaurantReview);
+    Review saveReview(ReviewDto reviewDto);
 
-    Review updateReview(Long id, Review restaurantReview);
+    Review updateReview(Long id, ReviewDto reviewDto);
 
-    void deleteById(Long id);
+    void deleteById(Long reviewId);
 
     List<Review> findAllReviewByRestaurantId(Long restaurantId);
 

@@ -1,20 +1,16 @@
 package com.restaurant.finder.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -24,6 +20,10 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "reviews")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class Review {
     private User user;
 
     @Column(name = "restaurant_id", nullable = false, updatable = false)
-    private Long restaurant_id;
+    private Integer restaurant_id;
 
     @Column(nullable = false, name = "rating")
     private Integer rating;
@@ -55,59 +55,18 @@ public class Review {
     @UpdateTimestamp
     private LocalDateTime updated_at;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "isDineIn")
+    private Boolean isDineIn;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Integer getRating() {
-        return rating;
-    }
-
-    public void setRating(Integer rating) {
-        this.rating = rating;
-    }
-
-    public Long getRestaurant_id() {
-        return restaurant_id;
-    }
-
-    public void setRestaurant_id(Long restaurant_id) {
-        this.restaurant_id = restaurant_id;
-    }
-
-    public String getReview() {
-        return review;
-    }
-
-    public void setReview(String review) {
-        this.review = review;
-    }
-
-    public Integer getLikes() {
-        return likes;
-    }
-
-    public void setLikes(Integer likes) {
-        this.likes = likes;
-    }
-
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewLike> reviewLikes;
     @PrePersist
     public void onPrePersist() {
         this.created_at = LocalDateTime.now();
     }
-
 
 }
 

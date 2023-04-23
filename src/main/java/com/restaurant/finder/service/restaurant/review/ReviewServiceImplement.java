@@ -1,5 +1,6 @@
-package com.restaurant.finder.service;
+package com.restaurant.finder.service.restaurant.review;
 
+import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.ReviewLike;
@@ -12,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.InputMismatchException;
 import java.util.List;
 
 /**
@@ -38,51 +36,79 @@ public class ReviewServiceImplement implements ReviewService {
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * @param reviewDto except and object with all the mandatory review information
+     * @return saved review object
+     * @throws ResourceNotFoundException if user is not found
+     */
     @Override
-    public Review saveReview(Long userId, Review restaurantReview) {
+    public Review saveReview(ReviewDto reviewDto) {
 
-        return userRepository.findById(userId).map(user -> {
-            restaurantReview.setUser(user);
-            return restaurantReviewRepository.save(restaurantReview);
-        }).orElseThrow(() -> new ResourceNotFoundException("Not User found with id = " + restaurantReview.getUser().getId()));
+        Review review = new Review();
+        return userRepository.findById(Long.valueOf(reviewDto.getUserId())).map(user -> {
+            review.setUser(user);
+            review.setRestaurant_id(reviewDto.getRestaurantId());
+            review.setRating(reviewDto.getRating());
+            review.setReview(reviewDto.getReview());
+            review.setLikes(reviewDto.getLikes());
+            review.setIsDineIn(reviewDto.getIsDineIn());
+            return restaurantReviewRepository.save(review);
+        }).orElseThrow(() -> new ResourceNotFoundException("Not User found with id = " + review.getUser().getId()));
 
     }
 
+    /**
+     * @param id        except the reviewId , mandatory
+     * @param reviewDto except and object with all the mandatory review information
+     * @return updated review object
+     * @throws ResourceNotFoundException if review is not found
+     * @throws InvalidRequestException   if review is empty or null
+     */
     @Override
-    public Review updateReview(Long id, Review restaurantReview) {
+    public Review updateReview(Long id, ReviewDto reviewDto) {
 
         Review review = restaurantReviewRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Not found Review with id = " + id));
 
-        // Check if all fields in the restaurantReview object are null
-        boolean allFieldsNull = restaurantReview.getLikes() == null &&
-                restaurantReview.getRating() == null &&
-                restaurantReview.getReview() == null;
-
-        if (allFieldsNull) {
-            throw new InvalidRequestException("At least one field in the review object must be non-null");
+        if (reviewDto.getReview() == null || reviewDto.getReview().isEmpty() || reviewDto.getReview().isBlank()) {
+            throw new InvalidRequestException("The review must be non-null");
         }
 
-        if (restaurantReview.getLikes() != null) {
-            review.setLikes(restaurantReview.getLikes());
+        if (reviewDto.getLikes() != null) {
+            review.setLikes(reviewDto.getLikes());
         }
-        if (restaurantReview.getRating() != null) {
-            review.setRating(restaurantReview.getRating());
+        if (reviewDto.getRating() != null) {
+            review.setRating(reviewDto.getRating());
         }
-        if (restaurantReview.getReview() != null) {
-            review.setReview(restaurantReview.getReview());
+        if (reviewDto.getReview() != null) {
+            review.setReview(reviewDto.getReview());
+        }
+        if (reviewDto.getIsDineIn() != null) {
+            review.setIsDineIn(reviewDto.getIsDineIn());
         }
 
         restaurantReviewRepository.save(review);
         return review;
     }
 
+    /**
+     * @param reviewId needed reviewId to delete
+     * @throws InvalidRequestException if reviewId is empty or null
+     */
     @Override
-    public void deleteById(Long id) {
-        restaurantReviewRepository.deleteById(id);
+    public void deleteById(Long reviewId) {
+        if (reviewId == null || reviewId == 0) throw new InvalidRequestException("The reviewId must be non-null or 0");
+        restaurantReviewRepository.deleteById(reviewId);
     }
 
+    /**
+     * @param restaurant_id expect restaurant_id to fetch all the reviews
+     * @return List<Review>
+     * @throws InvalidRequestException if restaurant_id is empty or null
+     */
     @Override
     public List<Review> findAllReviewByRestaurantId(Long restaurant_id) {
+        if (restaurant_id == null || restaurant_id == 0)
+            throw new InvalidRequestException("The restaurant_id must be non-null or 0");
         return restaurantReviewRepository.findReviewsByRestaurant_id(restaurant_id);
     }
 

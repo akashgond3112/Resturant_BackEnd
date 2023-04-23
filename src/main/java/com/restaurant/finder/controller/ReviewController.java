@@ -1,9 +1,10 @@
 package com.restaurant.finder.controller;
 
+import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.ReviewLike;
-import com.restaurant.finder.service.ReviewService;
+import com.restaurant.finder.service.restaurant.review.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,64 +19,63 @@ import java.util.List;
  * Copyright (C) 2023 Newcastle University, UK
  */
 @RestController
-@RequestMapping("/api/v1/restaurant/reviews")
+@RequestMapping("/api/v1")
 @CrossOrigin("http://localhost:3000")
 public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
-    @PostMapping("")
-    public ResponseEntity<Review> create(@RequestBody Review reviewRequest, @RequestParam Long userId) {
-        return new ResponseEntity<>(reviewService.saveReview(userId, reviewRequest), HttpStatus.CREATED);
+    @PostMapping("/restaurant/reviews")
+    public ResponseEntity<Review> create(@RequestBody ReviewDto reviewDto) {
+        return new ResponseEntity<>(reviewService.saveReview(reviewDto), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Review> update(@PathVariable Long id, @RequestBody Review review) {
-        return new ResponseEntity<>(reviewService.updateReview(id, review), HttpStatus.OK);
+    @PutMapping("/restaurant/reviews/{id}")
+    public ResponseEntity<Review> update(@PathVariable Long id, @RequestBody ReviewDto reviewDto) {
+        return new ResponseEntity<>(reviewService.updateReview(id, reviewDto), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> delete(@PathVariable Long id) {
-        reviewService.deleteById(id);
+    @DeleteMapping("/restaurant/reviews/{id}")
+    public ResponseEntity<HttpStatus> delete(@PathVariable Long reviewId) {
+        reviewService.deleteById(reviewId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/{restaurantId}")
+    @GetMapping("/restaurant/reviews/{restaurantId}")
     public ResponseEntity<List<Review>> findByRestaurantId(@PathVariable Long restaurantId) {
         return new ResponseEntity<>(reviewService.findAllReviewByRestaurantId(restaurantId), HttpStatus.OK);
     }
 
-    /*Comments*/
-    @PostMapping("/{reviewId}/comments")
+    @PostMapping("/restaurant/reviews/{reviewId}/comments")
     public ResponseEntity<Comment> createComment(@PathVariable Long reviewId, @RequestBody Comment comment) {
         return new ResponseEntity<>(reviewService.saveComment(reviewId, comment), HttpStatus.CREATED);
     }
 
-    @PutMapping("/comments/{id}")
+    @PutMapping("/restaurant/reviews/comments/{id}")
     public ResponseEntity<Comment> updateComment(@PathVariable Long id, @RequestBody Comment comment) {
         return new ResponseEntity<>(reviewService.updateComment(id, comment), HttpStatus.OK);
     }
 
-    @DeleteMapping("/comments/{id}")
+    @DeleteMapping("/restaurant/reviews/comments/{id}")
     public ResponseEntity<HttpStatus> deleteComment(@PathVariable Long id) {
         reviewService.deleteCommentById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /*Review Likes*/
-    @PostMapping("/{reviewId}/likes")
+    @PostMapping("/restaurant/reviews/{reviewId}/likes")
     public ResponseEntity<ReviewLike> createReviewLike(@PathVariable Long reviewId, @RequestBody ReviewLike reviewLike) {
         return new ResponseEntity<>(reviewService.saveReviewLike(reviewId, reviewLike), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/likes/{id}")
+    @DeleteMapping("/restaurant/reviews/likes/{id}")
     public ResponseEntity<HttpStatus> deleteReviewLike(@PathVariable Long id) {
         reviewService.deleteReviewLikeById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
     }
 
-    @GetMapping("/{reviewId}/likes")
+    @GetMapping("/restaurant/reviews/{reviewId}/likes")
     public ResponseEntity<List<ReviewLike>> findLikesByReviewId(@PathVariable Long reviewId) {
         return new ResponseEntity<>(reviewService.findAllLikesByReviewId(reviewId), HttpStatus.OK);
     }
