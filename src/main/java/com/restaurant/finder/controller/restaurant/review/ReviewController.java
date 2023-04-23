@@ -1,5 +1,6 @@
-package com.restaurant.finder.controller;
+package com.restaurant.finder.controller.restaurant.review;
 
+import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
@@ -24,6 +25,9 @@ import java.util.List;
 public class ReviewController {
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    JwtTokenHelper jwtTokenHelper;
 
     @PostMapping("/restaurant/reviews")
     public ResponseEntity<Review> create(@RequestBody ReviewDto reviewDto) {

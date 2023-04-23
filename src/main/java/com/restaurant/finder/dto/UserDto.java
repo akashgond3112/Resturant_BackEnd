@@ -28,7 +28,7 @@ public class UserDto {
     @NotEmpty(message = "Password should not be empty")
     private String password;
     @NotEmpty
-    @Size(min = 10, message = "Password should be atleast 10 number long")
+    @Size(min = 10, message = "Password should be at least 10 number long")
     private String mobileNumber;
     @NotEmpty
     private Gender gender;

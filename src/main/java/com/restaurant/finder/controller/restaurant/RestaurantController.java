@@ -1,4 +1,4 @@
-package com.restaurant.finder.controller;
+package com.restaurant.finder.controller.restaurant;
 
 import com.restaurant.finder.model.Restaurant.Restaurant;
 import com.restaurant.finder.service.restaurant.RestaurantService;

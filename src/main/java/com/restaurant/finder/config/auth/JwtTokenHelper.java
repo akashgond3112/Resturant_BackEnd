@@ -1,16 +1,26 @@
 package com.restaurant.finder.config.auth;
 
+import com.restaurant.finder.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author akash.gond
@@ -34,57 +44,71 @@ public class JwtTokenHelper {
     @Value("${jwt.auth.expires_in}")
     private int expiresIn;
 
+    /*A time interval for which the token will be valid*/
+    @Value("${jwt.auth.refresh.token.expires_in}")
+    private int refreshExpiration;
+
     /*The signature algorithm we are using ot create the token*/
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
 
     /*To get all the claims from the token, It's like encoding the token when the
      * request comes from the client , we can decrypt it.*/
-    private Claims getAllClaimsFromToken(String token) {
-        Claims claims;
-        try {
-            claims = Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (Exception e) {
-            claims = null;
-        }
-        return claims;
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(getSignInKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    private Key getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
 
     /*Parse the token and get username from it.*/
     public String getUsernameFromToken(String token) {
-        String username;
-        try {
-            final Claims claims = this.getAllClaimsFromToken(token);
-            username = claims.getSubject();
-        } catch (Exception e) {
-            username = null;
-        }
-        return username;
+        return extractClaim(token, Claims::getSubject);
     }
 
     /*When the first time user authenticate successfully we will create the token*/
-    public String generateToken(String username) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public String generateToken(String userName) {
+        return buildToken(new HashMap<>(), userName, expiresIn);
+    }
 
+    public String generateRefreshToken(String userName) {
+        return buildToken(new HashMap<>(), userName, refreshExpiration);
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, String userName, long expiration) {
         return Jwts.builder()
                 .setIssuer(appName)
-                .setSubject(username)
+                .setClaims(extraClaims)
+                .setSubject(userName)
                 .setIssuedAt(new Date())
-                .setExpiration(generateExpirationDate())
+                .setExpiration(generateExpirationDate(expiration))
                 .signWith(SIGNATURE_ALGORITHM, secretKey)
                 .compact();
     }
 
     /*Parse the token and generate expiration date and time.*/
-    private Date generateExpirationDate() {
-        return new Date(new Date().getTime() + expiresIn * 1000);
+    private Date generateExpirationDate(long expiresInDateTime) {
+        return new Date(new Date().getTime() + expiresInDateTime * 1000);
     }
 
     /*When ever a request comes from the authenticated user we will validate if the
-    * toke is valid or not.*/
+     * toke is valid or not.*/
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (
@@ -96,33 +120,25 @@ public class JwtTokenHelper {
 
     /*To check is the token is expired or not.*/
     public boolean isTokenExpired(String token) {
-        Date expireDate = getExpirationDate(token);
-        return expireDate.before(new Date());
+        Date expireDate = null;
+        try {
+            expireDate = getExpirationDate(token);
+        } catch (ExpiredJwtException expiredJwtException) {
+            return true;
+        }
+
+        return expireDate.before(new Date()) || tokenRepository.findByToken(token).get().isExpired();
     }
 
 
     /*To get the expiration date from the token*/
     private Date getExpirationDate(String token) {
-        Date expireDate;
-        try {
-            final Claims claims = this.getAllClaimsFromToken(token);
-            expireDate = claims.getExpiration();
-        } catch (Exception e) {
-            expireDate = null;
-        }
-        return expireDate;
+        return extractClaim(token, Claims::getExpiration);
     }
 
     /*To get the Issue date from the token*/
     public Date getIssuedAtDateFromToken(String token) {
-        Date issueAt;
-        try {
-            final Claims claims = this.getAllClaimsFromToken(token);
-            issueAt = claims.getIssuedAt();
-        } catch (Exception e) {
-            issueAt = null;
-        }
-        return issueAt;
+        return extractClaim(token, Claims::getIssuedAt);
     }
 
     /* A getter method to get the token from the request*/
@@ -131,9 +147,9 @@ public class JwtTokenHelper {
         String authHeader = getAuthHeaderFromHeader(request);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
+        } else {
+            throw new InputMismatchException("Header doesn't include the token");
         }
-
-        return null;
     }
 
     public String getAuthHeaderFromHeader(HttpServletRequest request) {

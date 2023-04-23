@@ -37,6 +37,8 @@ public class User implements UserDetails {
     private String email;
     @Column(nullable = false, unique = true, name = "password")
     private String password;
+    @Column(name = "mobile_Number")
+    private String mobileNumber;
     @Enumerated(EnumType.STRING)
     private Gender gender;
     @Enumerated(EnumType.STRING)
@@ -53,7 +55,10 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getPassword() {return password;}
+    public String getPassword() {
+        return password;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

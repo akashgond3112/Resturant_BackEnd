@@ -3,34 +3,51 @@ package com.restaurant.finder.config;
 import com.restaurant.finder.config.auth.JwtAuthenticationFilter;
 import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.config.auth.RestAuthenticationEntryPoint;
-import com.restaurant.finder.service.user.UserServiceImpl;
+import com.restaurant.finder.service.user.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Role;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfiguration {
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Autowired
     JwtTokenHelper jwtTokenHelper;
 
     @Autowired
     RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
+    @Autowired
+    JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private final LogoutHandler logoutHandler;
+    public static final String[] ENDPOINTS_WHITELIST = {
+            "/css/**",
+            "/login",
+            "/home",
+            "/register",
+            "/restaurants",
+            "/restaurant/*",
+            "/user/register"
+    };
 
     @Bean
     public static PasswordEncoder passwordEncoder() {
@@ -41,17 +58,16 @@ public class WebSecurityConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.authorizeHttpRequests().anyRequest().authenticated();
-//
-//        http.formLogin();
-//        http.httpBasic();
 
         http
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
+                .requestMatchers(ENDPOINTS_WHITELIST)
+                .permitAll()
                 .requestMatchers("/api/v1/auth/**")
                 .permitAll()
                 .anyRequest()
@@ -62,19 +78,13 @@ public class WebSecurityConfiguration {
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(restAuthenticationEntryPoint).and()
-                .addFilterBefore(new JwtAuthenticationFilter(userService, jwtTokenHelper), UsernamePasswordAuthenticationFilter.class);
-        ;
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout()
+                .logoutUrl("/api/v1/auth/logout")
+                .addLogoutHandler(logoutHandler)
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext());
         http.cors();
         return http.build();
-    }
-
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-
-//        auth.inMemoryAuthentication().withUser("akash").password(passwordEncoder().encode("test123")).authorities("user", "admin");
-
-//        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
-
     }
 
 }
