@@ -1,6 +1,7 @@
 package com.restaurant.finder.repository;
 
 import com.restaurant.finder.entity.Review;
+import com.restaurant.finder.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -21,6 +22,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE r.restaurant_id = :restaurantId")
     List<Review> findReviewsByRestaurant_id(@Param("restaurantId") Long restaurantId);
+
+    Review findByIdAndUserId(Long id, Long user_id );
 
 
 }

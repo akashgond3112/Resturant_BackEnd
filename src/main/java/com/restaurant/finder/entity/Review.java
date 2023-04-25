@@ -41,10 +41,10 @@ public class Review {
     @Column(nullable = false, name = "rating")
     private Integer rating;
 
-    @Column(nullable = true, name = "review")
+    @Column(nullable = false, name = "review")
     private String review;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer likes = 0;
 
     @Column(nullable = false,updatable = false)
@@ -55,8 +55,11 @@ public class Review {
     @UpdateTimestamp
     private LocalDateTime updated_at;
 
-    @Column(name = "isDineIn")
-    private Boolean isDineIn;
+    @Column(nullable = true, name = "dine_in_available")
+    private String dineInAvailable;
+
+    @Column(nullable = true, name = "delivery_available")
+    private String deliveryAvailable;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;

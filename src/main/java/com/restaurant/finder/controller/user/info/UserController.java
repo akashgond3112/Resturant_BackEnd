@@ -9,7 +9,6 @@ import com.restaurant.finder.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -42,7 +41,6 @@ public class UserController {
     public ResponseEntity<?> getUserInfo(HttpServletRequest request,
                                                HttpServletResponse response) {
 
-//        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String token;
         final String userName;
 
@@ -57,7 +55,7 @@ public class UserController {
                 throw new TokeExpiredException("Token has been expired");
             }
         }catch (TokeExpiredException tokeExpiredException){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token has been expired");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token has been expired");
         }
 
         userName = jwtTokenHelper.getUsernameFromToken(token);

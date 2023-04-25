@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,15 +40,6 @@ public class WebSecurityConfiguration {
     JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private final LogoutHandler logoutHandler;
-    public static final String[] ENDPOINTS_WHITELIST = {
-            "/css/**",
-            "/login",
-            "/home",
-            "/register",
-            "/restaurants",
-            "/restaurant/*",
-            "/user/register"
-    };
 
     @Bean
     public static PasswordEncoder passwordEncoder() {
@@ -66,9 +58,7 @@ public class WebSecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers(ENDPOINTS_WHITELIST)
-                .permitAll()
-                .requestMatchers("/api/v1/auth/**")
+                .requestMatchers("/api/v1/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -86,5 +76,4 @@ public class WebSecurityConfiguration {
         http.cors();
         return http.build();
     }
-
 }

@@ -4,15 +4,19 @@ import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.ReviewLike;
+import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.repository.CommentRepository;
 import com.restaurant.finder.repository.ReviewLikeRepository;
 import com.restaurant.finder.repository.ReviewRepository;
 import com.restaurant.finder.repository.UserRepository;
+import com.restaurant.finder.responses.review.ReviewResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 
 /**
@@ -42,19 +46,19 @@ public class ReviewServiceImplement implements ReviewService {
      * @throws ResourceNotFoundException if user is not found
      */
     @Override
-    public Review saveReview(ReviewDto reviewDto) {
+    public ReviewResponse saveReview(User user, ReviewDto reviewDto) {
 
         Review review = new Review();
-        return userRepository.findById(Long.valueOf(reviewDto.getUserId())).map(user -> {
-            review.setUser(user);
-            review.setRestaurant_id(reviewDto.getRestaurantId());
-            review.setRating(reviewDto.getRating());
-            review.setReview(reviewDto.getReview());
-            review.setLikes(reviewDto.getLikes());
-            review.setIsDineIn(reviewDto.getIsDineIn());
-            return restaurantReviewRepository.save(review);
-        }).orElseThrow(() -> new ResourceNotFoundException("Not User found with id = " + review.getUser().getId()));
+        review.setUser(user);
+        review.setRestaurant_id(reviewDto.getRestaurantId());
+        review.setRating(reviewDto.getRating());
+        review.setReview(reviewDto.getReview());
+        review.setLikes(reviewDto.getLikes());
+        review.setDineInAvailable(reviewDto.getDineInAvailable().isEmpty() ? "YES" : reviewDto.getDineInAvailable());
+        review.setDeliveryAvailable(reviewDto.getDeliveryAvailable().isEmpty() ? "NO" : reviewDto.getDeliveryAvailable());
+        restaurantReviewRepository.save(review);
 
+        return getReviewResponse(user, review);
     }
 
     /**
@@ -65,12 +69,18 @@ public class ReviewServiceImplement implements ReviewService {
      * @throws InvalidRequestException   if review is empty or null
      */
     @Override
-    public Review updateReview(Long id, ReviewDto reviewDto) {
+    public ReviewResponse updateReview(Long id, ReviewDto reviewDto, User user) {
 
-        Review review = restaurantReviewRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Not found Review with id = " + id));
+        if (id == null ||  reviewDto.getReview() == null ||
+                reviewDto.getReview().isEmpty() || reviewDto.getReview().isBlank()) {
+            throw new NullPointerException("The review request must be non-null");
+        }
 
-        if (reviewDto.getReview() == null || reviewDto.getReview().isEmpty() || reviewDto.getReview().isBlank()) {
-            throw new InvalidRequestException("The review must be non-null");
+        /*Check for an entry if the same user has written the review or not!*/
+        Review review = restaurantReviewRepository.findByIdAndUserId(id, user.getId());
+
+        if (review == null) {
+            throw new InvalidRequestException("Cannot find review with matching review Id and user Id while updating review!!");
         }
 
         if (reviewDto.getLikes() != null) {
@@ -82,12 +92,15 @@ public class ReviewServiceImplement implements ReviewService {
         if (reviewDto.getReview() != null) {
             review.setReview(reviewDto.getReview());
         }
-        if (reviewDto.getIsDineIn() != null) {
-            review.setIsDineIn(reviewDto.getIsDineIn());
+        if (reviewDto.getDineInAvailable() != null) {
+            review.setDineInAvailable(reviewDto.getDineInAvailable());
+        }
+        if (reviewDto.getDeliveryAvailable() != null) {
+            review.setDeliveryAvailable(reviewDto.getDeliveryAvailable());
         }
 
         restaurantReviewRepository.save(review);
-        return review;
+        return getReviewResponse(user, review);
     }
 
     /**
@@ -95,9 +108,18 @@ public class ReviewServiceImplement implements ReviewService {
      * @throws InvalidRequestException if reviewId is empty or null
      */
     @Override
-    public void deleteById(Long reviewId) {
-        if (reviewId == null || reviewId == 0) throw new InvalidRequestException("The reviewId must be non-null or 0");
-        restaurantReviewRepository.deleteById(reviewId);
+    public void deleteById(Long reviewId, User user) {
+
+        if (reviewId == null || reviewId == 0) throw new NullPointerException("The reviewId cannot be non-null or 0");
+
+        /*Check for an entry if the same user has written the review or not!*/
+        Review review = restaurantReviewRepository.findByIdAndUserId(reviewId, user.getId());
+
+        if (review == null) {
+            throw new InvalidRequestException("Cannot find review with matching review Id and user Id while deleting review!!");
+        }
+
+        restaurantReviewRepository.deleteById(review.getId());
     }
 
     /**
@@ -106,38 +128,30 @@ public class ReviewServiceImplement implements ReviewService {
      * @throws InvalidRequestException if restaurant_id is empty or null
      */
     @Override
-    public List<Review> findAllReviewByRestaurantId(Long restaurant_id) {
+    public List<ReviewResponse> findAllReviewByRestaurantId(Long restaurant_id, User user) {
         if (restaurant_id == null || restaurant_id == 0)
-            throw new InvalidRequestException("The restaurant_id must be non-null or 0");
-        return restaurantReviewRepository.findReviewsByRestaurant_id(restaurant_id);
+            throw new InvalidRequestException("The restaurant_id must not be non-null or 0");
+
+        List<ReviewResponse> reviewResponseList = new ArrayList<>();
+        restaurantReviewRepository.findReviewsByRestaurant_id(restaurant_id).forEach(review -> {
+            reviewResponseList.add(getReviewResponse(user, review));
+        });
+        return reviewResponseList;
     }
 
-    @Override
-    public Comment saveComment(Long reviewId, Comment commentRequest) {
-
-        return restaurantReviewRepository.findById(reviewId).map(review -> {
-            commentRequest.setReview(review);
-            commentRequest.setUser(review.getUser());
-            return commentRepository.save(commentRequest);
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Review with id = " + reviewId));
-    }
-
-    @Override
-    public Comment updateComment(Long commentId, Comment commentRequest) {
-
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ResourceNotFoundException("CommentId " + commentId + "not found"));
-        comment.setText(commentRequest.getText());
-        return comment;
-    }
-
-    @Override
-    public void deleteCommentById(Long id) {
-        commentRepository.deleteById(id);
-    }
-
-    @Override
-    public List<Comment> findAllCommentByReviewId(Long reviewId) {
-        return commentRepository.findAllByReviewId(reviewId);
+    private ReviewResponse getReviewResponse(User user, Review review) {
+        return ReviewResponse.builder()
+                .reviewId(review.getId())
+                .review(review.getReview())
+                .userId(review.getUser().getId())
+                .userName(review.getUser().getUsername())
+                .restaurantId(review.getRestaurant_id())
+                .rating(review.getRating())
+                .likes(review.getLikes())
+                .deliveryAvailable(review.getDeliveryAvailable())
+                .dineInAvailable(review.getDineInAvailable())
+                .canEdit(review.getUser().getId().equals(user.getId()))
+                .canDelete(review.getUser().getId().equals(user.getId())).build();
     }
 
     /*Review Likes*/

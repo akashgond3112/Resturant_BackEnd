@@ -20,7 +20,7 @@ import javax.validation.constraints.NotEmpty;
 public class ReviewDto {
 
     @NotEmpty(message = "userId should not be empty")
-    private String userId;
+    private Long userId;
     @NotEmpty(message = "restaurant_id should not be empty")
     private int restaurantId;
     @NotEmpty(message = "rating should not be empty")
@@ -28,7 +28,9 @@ public class ReviewDto {
     @NotEmpty(message = "review should not be empty")
     private String review;
     private Integer likes;
-    @NotEmpty(message = "isDineIn should not be empty")
-    private Boolean isDineIn;
+    @NotEmpty(message = "deliveryAvailable should not be empty")
+    private String deliveryAvailable;
+    @NotEmpty(message = "dineInAvailable should not be empty")
+    private String dineInAvailable;
 
 }

@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.*;
  * Copyright (C) 2023 Newcastle University, UK
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/v1")
 @CrossOrigin
 public class RegistrationController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("/user/register")
     public ResponseEntity<AuthenticationResponse> registration(@RequestBody UserDto userDto){
         User existingUser = userService.findUserByEmail(userDto.getEmail());
 

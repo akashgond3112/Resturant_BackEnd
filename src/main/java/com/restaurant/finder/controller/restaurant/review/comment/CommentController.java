@@ -1,15 +1,19 @@
-package com.restaurant.finder.controller.restaurant.review;
+package com.restaurant.finder.controller.restaurant.review.comment;
 
 import com.restaurant.finder.config.auth.JwtTokenHelper;
+import com.restaurant.finder.dto.CommentDto;
 import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
-import com.restaurant.finder.exception.TokeExpiredException;
+import com.restaurant.finder.repository.CommentRepository;
+import com.restaurant.finder.repository.ReviewRepository;
+import com.restaurant.finder.responses.review.CommentResponse;
 import com.restaurant.finder.responses.review.ReviewResponse;
 import com.restaurant.finder.service.restaurant.review.ReviewService;
+import com.restaurant.finder.service.restaurant.review.comment.CommentService;
 import com.restaurant.finder.service.user.UserService;
 import com.restaurant.finder.utilities.Utilities;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,8 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author akash.gond
@@ -30,19 +34,24 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin("http://localhost:3000")
-public class ReviewController {
+public class CommentController {
     @Autowired
-    private ReviewService reviewService;
+    private CommentService commentService;
 
     @Autowired
     UserService userService;
 
     @Autowired
+    private ReviewRepository restaurantReviewRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
     JwtTokenHelper jwtTokenHelper;
 
-    @PostMapping("/restaurant/reviews")
-    public ResponseEntity<?> create(HttpServletRequest request, @RequestBody ReviewDto reviewDto) {
-
+    @PostMapping("/restaurant/reviews/{reviewId}/comments")
+    public ResponseEntity<?> createComment(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody CommentDto commentDto) {
 
         ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
         if (objectResponseEntity != null) {
@@ -50,17 +59,19 @@ public class ReviewController {
         }
 
         User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
-        if (user != null) {
-            reviewDto.setUserId(user.getId());
+        Optional<Review> review = restaurantReviewRepository.findById(reviewId);
+        if (user != null && review.get() != null) {
+            commentDto.setUserId(user.getId());
+            commentDto.setReviewId(review.get().getId());
         } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot find either user associated or review Id is null || 0.");
         }
-        return new ResponseEntity<>(reviewService.saveReview(user, reviewDto), HttpStatus.CREATED);
+
+        return new ResponseEntity<>(commentService.saveComment(user, review.get(), commentDto), HttpStatus.CREATED);
     }
 
-    @PutMapping("/restaurant/reviews/{reviewId}")
-    public ResponseEntity<?> update(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody ReviewDto reviewDto) {
-
+    @PutMapping("/restaurant/reviews/comments/{id}")
+    public ResponseEntity<?> updateComment(HttpServletRequest request, @PathVariable Long id, @RequestBody CommentDto commentDto) {
 
         ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
         if (objectResponseEntity != null) {
@@ -68,23 +79,26 @@ public class ReviewController {
         }
 
         User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
+        Optional<Comment> comment = commentRepository.findById(id);
 
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (user == null || id == 0 || comment.get() != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot find either user associated or review Id is null || 0.");
         } else {
             try {
-                return new ResponseEntity<>(reviewService.updateReview(reviewId, reviewDto, user), HttpStatus.OK);
+                commentDto.setUserId(user.getId());
+                commentDto.setReviewId(comment.get().getReview().getId());
+                return new ResponseEntity<>(commentService.updateComment(id, commentDto, user, comment.get().getReview()), HttpStatus.OK);
             } catch (InvalidRequestException invalidRequestException) {
                 return new ResponseEntity<String>(invalidRequestException.getMessage(), null, HttpStatus.FORBIDDEN);
             } catch (NullPointerException nullPointerException) {
                 return new ResponseEntity<String>(nullPointerException.getMessage(), null, HttpStatus.BAD_REQUEST);
             }
-        }
 
+        }
     }
 
-    @DeleteMapping("/restaurant/reviews/{reviewId}")
-    public ResponseEntity<?> delete(HttpServletRequest request, @PathVariable Long reviewId) {
+    @DeleteMapping("/restaurant/reviews/comments/{id}")
+    public ResponseEntity<?> deleteComment(HttpServletRequest request, @PathVariable Long id) {
 
         ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
         if (objectResponseEntity != null) {
@@ -96,7 +110,7 @@ public class ReviewController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
             try {
-                reviewService.deleteById(reviewId, user);
+                commentService.deleteCommentById(id, user);
             } catch (InvalidRequestException invalidRequestException) {
                 return new ResponseEntity<String>(invalidRequestException.getMessage(), null, HttpStatus.FORBIDDEN);
             } catch (NullPointerException nullPointerException) {
@@ -107,34 +121,17 @@ public class ReviewController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/restaurant/reviews/{restaurantId}")
-    public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(HttpServletRequest request, @PathVariable Long restaurantId) {
+    @GetMapping("/restaurant/reviews/comments/{id}")
+    public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(HttpServletRequest request, @PathVariable Long id) {
 
         User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
-            List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId, user);
+            List<CommentResponse> reviewList = commentService.findAllCommentByReviewId(id, user);
             return new ResponseEntity<>(reviewList, HttpStatus.OK);
         }
     }
 
-    /*Review Likes*/
-    @PostMapping("/restaurant/reviews/{reviewId}/likes")
-    public ResponseEntity<ReviewLike> createReviewLike(@PathVariable Long reviewId, @RequestBody ReviewLike reviewLike) {
-        return new ResponseEntity<>(reviewService.saveReviewLike(reviewId, reviewLike), HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/restaurant/reviews/likes/{id}")
-    public ResponseEntity<HttpStatus> deleteReviewLike(@PathVariable Long id) {
-        reviewService.deleteReviewLikeById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
-    }
-
-    @GetMapping("/restaurant/reviews/{reviewId}/likes")
-    public ResponseEntity<List<ReviewLike>> findLikesByReviewId(@PathVariable Long reviewId) {
-        return new ResponseEntity<>(reviewService.findAllLikesByReviewId(reviewId), HttpStatus.OK);
-    }
 }
 

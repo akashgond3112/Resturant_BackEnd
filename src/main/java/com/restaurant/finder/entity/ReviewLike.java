@@ -1,6 +1,10 @@
 package com.restaurant.finder.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +18,10 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "review_likes")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReviewLike {
 
     @Id
@@ -35,21 +43,4 @@ public class ReviewLike {
     @Column(nullable = false,updatable = true)
     @UpdateTimestamp
     private LocalDateTime updated_at;
-
-    public Review getReview() {
-        return review;
-    }
-
-    public void setReview(Review review) {
-        this.review = review;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-    // getters and setters
 }
