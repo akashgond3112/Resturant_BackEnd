@@ -3,20 +3,19 @@ package com.restaurant.finder.service.restaurant.review;
 import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
-import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.repository.CommentRepository;
 import com.restaurant.finder.repository.ReviewLikeRepository;
 import com.restaurant.finder.repository.ReviewRepository;
-import com.restaurant.finder.repository.UserRepository;
+import com.restaurant.finder.responses.comment.CommentResponse;
+import com.restaurant.finder.responses.likes.ReviewLikeResponse;
 import com.restaurant.finder.responses.review.ReviewResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.List;
 
 /**
@@ -30,15 +29,10 @@ public class ReviewServiceImplement implements ReviewService {
 
     @Autowired
     private ReviewRepository restaurantReviewRepository;
-
-    @Autowired
-    private ReviewLikeRepository reviewLikeRepository;
-
     @Autowired
     private CommentRepository commentRepository;
-
     @Autowired
-    private UserRepository userRepository;
+    private ReviewLikeRepository reviewLikeRepository;
 
     /**
      * @param reviewDto except and object with all the mandatory review information
@@ -71,7 +65,7 @@ public class ReviewServiceImplement implements ReviewService {
     @Override
     public ReviewResponse updateReview(Long id, ReviewDto reviewDto, User user) {
 
-        if (id == null ||  reviewDto.getReview() == null ||
+        if (id == null || reviewDto.getReview() == null ||
                 reviewDto.getReview().isEmpty() || reviewDto.getReview().isBlank()) {
             throw new NullPointerException("The review request must be non-null");
         }
@@ -147,33 +141,46 @@ public class ReviewServiceImplement implements ReviewService {
                 .userName(review.getUser().getUsername())
                 .restaurantId(review.getRestaurant_id())
                 .rating(review.getRating())
-                .likes(review.getLikes())
+                .comments(getCommentResponseList(user, review))
+                .likes(getReviewLikeResponseList(user, review))
                 .deliveryAvailable(review.getDeliveryAvailable())
                 .dineInAvailable(review.getDineInAvailable())
                 .canEdit(review.getUser().getId().equals(user.getId()))
                 .canDelete(review.getUser().getId().equals(user.getId())).build();
     }
 
-    /*Review Likes*/
-    @Override
-    public ReviewLike saveReviewLike(Long reviewId, ReviewLike reviewLikeRequest) {
+    private List<CommentResponse> getCommentResponseList(User user, Review review) {
 
-        return restaurantReviewRepository.findById(reviewId).map(review -> {
-            reviewLikeRequest.setReview(review);
-            reviewLikeRequest.setUser(review.getUser());
-            return reviewLikeRepository.save(reviewLikeRequest);
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Review with id = " + reviewId));
-
+        List<CommentResponse> commentResponseList = new ArrayList<>();
+        commentRepository.findAllByReviewId(review.getId()).forEach(comment -> {
+            commentResponseList.add(CommentResponse.builder()
+                    .restaurantId(review.getRestaurant_id())
+                    .reviewId(review.getId())
+                    .userId(user.getId())
+                    .userName(user.getUsername())
+                    .comment(comment.getComment())
+                    .canEdit(comment.getUser().getId().equals(user.getId()))
+                    .canDelete(comment.getUser().getId().equals(user.getId())).build());
+        });
+        return commentResponseList;
     }
 
-    @Override
-    public void deleteReviewLikeById(Long id) {
-        reviewLikeRepository.deleteById(id);
-    }
+    private List<ReviewLikeResponse> getReviewLikeResponseList(User user, Review review) {
+        List<ReviewLikeResponse> reviewLikeResponses = new ArrayList<>();
 
-    @Override
-    public List<ReviewLike> findAllLikesByReviewId(Long reviewId) {
-        return reviewLikeRepository.findAllByReviewId(reviewId);
+        reviewLikeRepository.findAllByReviewId(review.getId()).forEach(reviewLike -> {
+            reviewLikeResponses.add(
+                    ReviewLikeResponse.builder()
+                            .restaurantId(review.getRestaurant_id())
+                            .reviewId(review.getId())
+                            .reviewLikeId(reviewLike.getId())
+                            .userId(user.getId())
+                            .userName(user.getUsername())
+                            .canRemoveLike(reviewLike.getUser().getId().equals(user.getId())).build()
+            );
+        });
+        return reviewLikeResponses;
+
     }
 }
 

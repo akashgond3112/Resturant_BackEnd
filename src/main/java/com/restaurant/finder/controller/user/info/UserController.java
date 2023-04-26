@@ -4,10 +4,9 @@ import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.dto.UserDto;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.enums.Role;
-import com.restaurant.finder.exception.TokeExpiredException;
 import com.restaurant.finder.service.user.UserService;
+import com.restaurant.finder.utilities.Utilities;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
-import java.util.InputMismatchException;
 import java.util.List;
 
 /**
@@ -37,30 +35,19 @@ public class UserController {
     @Autowired
     private JwtTokenHelper jwtTokenHelper;
 
+    /**
+     * @param request request include the request having the token
+     * @return the userDto object having the user details
+     */
     @GetMapping("/auth/userinfo")
-    public ResponseEntity<?> getUserInfo(HttpServletRequest request,
-                                               HttpServletResponse response) {
+    public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
 
-        final String token;
-        final String userName;
-
-        try {
-            token = jwtTokenHelper.getToken(request);
-        } catch (InputMismatchException inputMismatchException) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
+        if (objectResponseEntity != null) {
+            return objectResponseEntity;
         }
 
-        try{
-            if (jwtTokenHelper.isTokenExpired(token)) {
-                throw new TokeExpiredException("Token has been expired");
-            }
-        }catch (TokeExpiredException tokeExpiredException){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token has been expired");
-        }
-
-        userName = jwtTokenHelper.getUsernameFromToken(token);
-
-        User user = (User) userService.loadUserByUsername(userName);
+        User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
 
         if (user != null) {
             UserDto userDto = new UserDto();
@@ -74,6 +61,10 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * @param principal expect a current user principal object
+     * @return List<User></User> only the role of the user is admin else return forbidden error
+     */
     @GetMapping("auth/users")
     public ResponseEntity<List<User>> getUsers(Principal principal) {
 

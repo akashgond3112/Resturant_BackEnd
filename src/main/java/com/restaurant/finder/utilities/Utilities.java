@@ -21,6 +21,14 @@ import java.util.InputMismatchException;
 @Slf4j
 public class Utilities {
 
+    /**
+     * @param jwtTokenHelper expect jwtTokenHelper object
+     * @param request expect the HttpServletRequest
+     * @param userService expect userService object
+     * @return the user entity object if the token in not expired
+     * @throws InputMismatchException if we cannot get the token from the request
+     * @throws TokeExpiredException if the token is expired
+     */
     public static User getCurrentUser(JwtTokenHelper jwtTokenHelper, HttpServletRequest request, UserService userService) {
         final String token;
         final String userName;
@@ -42,6 +50,13 @@ public class Utilities {
         return (User) userService.loadUserByUsername(userName);
     }
 
+    /**
+     * @param jwtTokenHelper expect jwtTokenHelper object
+     * @param request expect the HttpServletRequest
+     * @return the response entity object if the token in not expired
+     * @throws InputMismatchException if we cannot get the token from the request
+     * @throws TokeExpiredException if the token is expired
+     */
     public static ResponseEntity<Object> validateIsTokeExpired(JwtTokenHelper jwtTokenHelper, HttpServletRequest request) {
         final String token;
         final String userName;

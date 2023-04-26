@@ -24,10 +24,4 @@ public interface ReviewService {
 
     List<ReviewResponse> findAllReviewByRestaurantId(Long restaurantId, User user);
 
-    ReviewLike saveReviewLike(Long reviewId, ReviewLike reviewLike);
-
-    void deleteReviewLikeById(Long id);
-
-    List<ReviewLike> findAllLikesByReviewId(Long reviewId);
-
 }

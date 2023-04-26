@@ -1,6 +1,6 @@
 package com.restaurant.finder.service.restaurant;
 
-import com.restaurant.finder.model.Restaurant.Restaurant;
+import com.restaurant.finder.pojo.Restaurant.Restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

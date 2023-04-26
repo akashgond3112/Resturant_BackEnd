@@ -1,12 +1,9 @@
 package com.restaurant.finder.service.restaurant.review.comment;
 
 import com.restaurant.finder.dto.CommentDto;
-import com.restaurant.finder.dto.ReviewDto;
-import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
-import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
-import com.restaurant.finder.responses.review.CommentResponse;
+import com.restaurant.finder.responses.comment.CommentResponse;
 
 import java.util.List;
 

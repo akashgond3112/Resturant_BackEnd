@@ -2,18 +2,15 @@ package com.restaurant.finder.controller.restaurant.review.comment;
 
 import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.dto.CommentDto;
-import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
-import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
+import com.restaurant.finder.exception.TokeExpiredException;
 import com.restaurant.finder.repository.CommentRepository;
 import com.restaurant.finder.repository.ReviewRepository;
 import com.restaurant.finder.repository.UserRepository;
-import com.restaurant.finder.responses.review.CommentResponse;
-import com.restaurant.finder.responses.review.ReviewResponse;
-import com.restaurant.finder.service.restaurant.review.ReviewService;
+import com.restaurant.finder.responses.comment.CommentResponse;
 import com.restaurant.finder.service.restaurant.review.comment.CommentService;
 import com.restaurant.finder.service.user.UserService;
 import com.restaurant.finder.utilities.Utilities;
@@ -23,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,21 +36,25 @@ import java.util.Optional;
 public class CommentController {
     @Autowired
     private CommentService commentService;
-
     @Autowired
-    UserService userService;
-
+    private UserService userService;
     @Autowired
     private ReviewRepository restaurantReviewRepository;
-
     @Autowired
     private CommentRepository commentRepository;
-
     @Autowired
-    JwtTokenHelper jwtTokenHelper;
+    private JwtTokenHelper jwtTokenHelper;
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * @param request    expect the HTTP Request
+     * @param reviewId   expect the review id for which comment will be added
+     * @param commentDto an commentDto object to be added
+     * @return CommentResponse object
+     * @throws InputMismatchException if the request was incorrect
+     * @throws TokeExpiredException   if the token expired
+     */
     @PostMapping("/restaurant/reviews/{reviewId}/comments")
     public ResponseEntity<?> createComment(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody CommentDto commentDto) {
 
@@ -73,6 +75,14 @@ public class CommentController {
         return new ResponseEntity<>(commentService.saveComment(user, review.get(), commentDto), HttpStatus.CREATED);
     }
 
+    /**
+     * @param request    expect the HTTP Request
+     * @param id         expect the comment id for which comment will be updated
+     * @param commentDto expect commentDto object to be updated
+     * @return updated CommentResponse object
+     * @throws InputMismatchException if the request was incorrect
+     * @throws TokeExpiredException   if the token expired
+     */
     @PutMapping("/restaurant/reviews/comments/{id}")
     public ResponseEntity<?> updateComment(HttpServletRequest request, @PathVariable Long id, @RequestBody CommentDto commentDto) {
 
@@ -100,6 +110,13 @@ public class CommentController {
         }
     }
 
+    /**
+     * @param request expect the HTTP Request
+     * @param id expect the comment id to be deleted
+     * @return a status code if its success
+     * @throws TokeExpiredException if the token expired
+     * @throws NullPointerException if we didn't find any matching review for deleting
+     */
     @DeleteMapping("/restaurant/reviews/comments/{id}")
     public ResponseEntity<?> deleteComment(HttpServletRequest request, @PathVariable Long id) {
 
@@ -124,14 +141,19 @@ public class CommentController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/restaurant/reviews/comments/{id}")
-    public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(@RequestParam Long userId, @PathVariable Long id) {
+    /**
+     * @param userId expect an userId
+     * @param reviewId for which we want all the comments
+     * @return  List<CommentResponse></CommentResponse>
+     */
+    @GetMapping("/restaurant/reviews/comments/{reviewId}")
+    public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(@RequestParam Long userId, @PathVariable Long reviewId) {
 
         Optional<User> user = userRepository.findById(userId);
         if (user.get() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
-            List<CommentResponse> reviewList = commentService.findAllCommentByReviewId(id, user.get());
+            List<CommentResponse> reviewList = commentService.findAllCommentByReviewId(reviewId, user.get());
             return new ResponseEntity<>(reviewList, HttpStatus.OK);
         }
     }

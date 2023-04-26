@@ -44,6 +44,13 @@ public class ReviewController {
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * @param request expect the HTTP Request
+     * @param reviewDto an reviewDto object
+     * @return the Review response
+     * @throws InputMismatchException if the request was incorrect
+     * @throws TokeExpiredException if the token expired
+     */
     @PostMapping("/restaurant/reviews")
     public ResponseEntity<?> create(HttpServletRequest request, @RequestBody ReviewDto reviewDto) {
 
@@ -62,6 +69,14 @@ public class ReviewController {
         return new ResponseEntity<>(reviewService.saveReview(user, reviewDto), HttpStatus.CREATED);
     }
 
+    /**
+     * @param request expect the HTTP Request
+     * @param reviewId expect the review id to be updated
+     * @param reviewDto an review object
+     * @throws InputMismatchException if the request was incorrect
+     * @throws TokeExpiredException if the token expired
+     * @return the Review response
+     */
     @PutMapping("/restaurant/reviews/{reviewId}")
     public ResponseEntity<?> update(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody ReviewDto reviewDto) {
 
@@ -87,6 +102,13 @@ public class ReviewController {
 
     }
 
+    /**
+     * @param request expect the HTTP Request
+     * @param reviewId expect the review id to be deleted
+     * @return a status code if its success
+     * @throws TokeExpiredException if the token expired
+     * @throws NullPointerException if we didn't find any matching review for deleting
+     */
     @DeleteMapping("/restaurant/reviews/{reviewId}")
     public ResponseEntity<?> delete(HttpServletRequest request, @PathVariable Long reviewId) {
 
@@ -111,6 +133,11 @@ public class ReviewController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * @param userId expect an userId
+     * @param restaurantId expect an restaurantId
+     * @return List<ReviewResponse></ReviewResponse>
+     */
     @GetMapping("/restaurant/reviews/{restaurantId}")
     public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(@RequestParam Long userId, @PathVariable Long restaurantId) {
 
@@ -121,24 +148,6 @@ public class ReviewController {
             List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId, user.get());
             return new ResponseEntity<>(reviewList, HttpStatus.OK);
         }
-    }
-
-    /*Review Likes*/
-    @PostMapping("/restaurant/reviews/{reviewId}/likes")
-    public ResponseEntity<ReviewLike> createReviewLike(@PathVariable Long reviewId, @RequestBody ReviewLike reviewLike) {
-        return new ResponseEntity<>(reviewService.saveReviewLike(reviewId, reviewLike), HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/restaurant/reviews/likes/{id}")
-    public ResponseEntity<HttpStatus> deleteReviewLike(@PathVariable Long id) {
-        reviewService.deleteReviewLikeById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
-    }
-
-    @GetMapping("/restaurant/reviews/{reviewId}/likes")
-    public ResponseEntity<List<ReviewLike>> findLikesByReviewId(@PathVariable Long reviewId) {
-        return new ResponseEntity<>(reviewService.findAllLikesByReviewId(reviewId), HttpStatus.OK);
     }
 }
 

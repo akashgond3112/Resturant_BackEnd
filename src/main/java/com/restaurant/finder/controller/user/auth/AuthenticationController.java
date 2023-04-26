@@ -1,15 +1,13 @@
 package com.restaurant.finder.controller.user.auth;
 
 import com.restaurant.finder.config.auth.JwtTokenHelper;
-import com.restaurant.finder.dto.UserDto;
 import com.restaurant.finder.entity.Token;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.enums.TokenType;
 import com.restaurant.finder.repository.TokenRepository;
 import com.restaurant.finder.service.user.UserService;
-import com.restaurant.finder.service.user.UserServiceImpl;
-import com.restaurant.finder.utilities.AuthenticationRequest;
-import com.restaurant.finder.utilities.AuthenticationResponse;
+import com.restaurant.finder.responses.authentication.AuthenticationRequest;
+import com.restaurant.finder.responses.authentication.AuthenticationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 /**
@@ -50,6 +45,10 @@ public class AuthenticationController {
     @Autowired
     private TokenRepository tokenRepository;
 
+    /**
+     * @param authenticationRequest which include the username and password of the user
+     * @return the generated token as AuthenticationResponse
+     */
     @PostMapping("/auth/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest) {
         final Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -65,7 +64,7 @@ public class AuthenticationController {
         List<Token> tokens = tokenRepository.findAllByUser(user);
 
         /*Here we will check if there is an assigned token for the user
-         * If that token is neo */
+         * If that token is new*/
         if (tokens.size() > 0) {
             for (Token token : tokens) {
                 if (jwtTokenHelper.isTokenExpired(token.getToken())) {
@@ -97,6 +96,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationResponse);
     }
 
+    /**
+     * @param request request include the current token of the user
+     * @param response response as refresh token
+     * @throws IOException if we cannot find the matching token
+     */
     @PostMapping("auth/refresh-token")
     public void refreshToken(
             HttpServletRequest request,

@@ -1,6 +1,6 @@
 package com.restaurant.finder.service.restaurant;
 
-import com.restaurant.finder.model.Restaurant.Restaurant;
+import com.restaurant.finder.pojo.Restaurant.Restaurant;
 
 /**
  * @author Team-alpha

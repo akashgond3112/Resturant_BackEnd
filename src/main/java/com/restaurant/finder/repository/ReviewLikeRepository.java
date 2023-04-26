@@ -16,5 +16,7 @@ import java.util.List;
 @Repository
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
     List<ReviewLike> findAllByReviewId(Long reviewId);
+
+    ReviewLike findByIdAndUserId(Long id, Long user_id);
 }
 

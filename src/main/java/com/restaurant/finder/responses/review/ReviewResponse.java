@@ -1,8 +1,11 @@
 package com.restaurant.finder.responses.review;
 
+import com.restaurant.finder.responses.comment.CommentResponse;
+import com.restaurant.finder.responses.likes.ReviewLikeResponse;
 import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * @author Team-alpha
@@ -23,7 +26,8 @@ public class ReviewResponse {
     private int restaurantId;
     private Integer rating;
     private String review;
-    private Integer likes;
+    private List<ReviewLikeResponse> likes;
+    private List<CommentResponse> comments;
     private String deliveryAvailable;
     private String dineInAvailable;
     private boolean canEdit;

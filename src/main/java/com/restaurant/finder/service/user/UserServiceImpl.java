@@ -1,7 +1,7 @@
 package com.restaurant.finder.service.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.restaurant.finder.utilities.AuthenticationResponse;
+import com.restaurant.finder.responses.authentication.AuthenticationResponse;
 import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.dto.UserDto;
 import com.restaurant.finder.entity.Token;

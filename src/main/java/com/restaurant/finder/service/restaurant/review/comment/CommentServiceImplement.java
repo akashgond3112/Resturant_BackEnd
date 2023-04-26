@@ -1,26 +1,20 @@
 package com.restaurant.finder.service.restaurant.review.comment;
 
 import com.restaurant.finder.dto.CommentDto;
-import com.restaurant.finder.dto.ReviewDto;
 import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
-import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.repository.CommentRepository;
 import com.restaurant.finder.repository.ReviewLikeRepository;
 import com.restaurant.finder.repository.ReviewRepository;
 import com.restaurant.finder.repository.UserRepository;
-import com.restaurant.finder.responses.review.CommentResponse;
-import com.restaurant.finder.responses.review.ReviewResponse;
-import com.restaurant.finder.service.restaurant.review.ReviewService;
+import com.restaurant.finder.responses.comment.CommentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Team-alpha
@@ -32,16 +26,7 @@ import java.util.Optional;
 public class CommentServiceImplement implements CommentService {
 
     @Autowired
-    private ReviewRepository restaurantReviewRepository;
-
-    @Autowired
-    private ReviewLikeRepository reviewLikeRepository;
-
-    @Autowired
     private CommentRepository commentRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Override
     public CommentResponse saveComment(User user, Review review, CommentDto commentDto) {
