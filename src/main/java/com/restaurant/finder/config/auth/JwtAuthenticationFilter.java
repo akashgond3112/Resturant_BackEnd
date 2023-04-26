@@ -1,5 +1,6 @@
 package com.restaurant.finder.config.auth;
 
+import com.restaurant.finder.exception.TokeExpiredException;
 import com.restaurant.finder.repository.TokenRepository;
 import com.restaurant.finder.service.user.UserService;
 import jakarta.servlet.FilterChain;
@@ -34,6 +35,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenHelper jwtTokenHelper;
 
 
+    /**
+     * The filter retrieves the JWT token from the request headers and transfers authentication to the injected AuthenticationManager in this class,
+     * which serves as the starting point of our JWT authentication process.
+     * An exception is thrown if the token cannot be located, which prevents the request from being processed.
+     * @param request
+     * @param response
+     * @param filterChain
+     * @throws ServletException
+     * @throws IOException
+     * @throws TokeExpiredException
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -68,6 +80,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                throw new TokeExpiredException("Token has been expired!");
             }
         }
         filterChain.doFilter(request, response);

@@ -8,6 +8,7 @@ import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.exception.TokeExpiredException;
+import com.restaurant.finder.repository.UserRepository;
 import com.restaurant.finder.responses.review.ReviewResponse;
 import com.restaurant.finder.service.restaurant.review.ReviewService;
 import com.restaurant.finder.service.user.UserService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Team-alpha
@@ -39,6 +41,8 @@ public class ReviewController {
 
     @Autowired
     JwtTokenHelper jwtTokenHelper;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/restaurant/reviews")
     public ResponseEntity<?> create(HttpServletRequest request, @RequestBody ReviewDto reviewDto) {
@@ -108,13 +112,13 @@ public class ReviewController {
     }
 
     @GetMapping("/restaurant/reviews/{restaurantId}")
-    public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(HttpServletRequest request, @PathVariable Long restaurantId) {
+    public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(@RequestParam Long userId, @PathVariable Long restaurantId) {
 
-        User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
-        if (user == null) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.get() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
-            List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId, user);
+            List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId, user.get());
             return new ResponseEntity<>(reviewList, HttpStatus.OK);
         }
     }

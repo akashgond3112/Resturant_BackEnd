@@ -10,6 +10,7 @@ import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.repository.CommentRepository;
 import com.restaurant.finder.repository.ReviewRepository;
+import com.restaurant.finder.repository.UserRepository;
 import com.restaurant.finder.responses.review.CommentResponse;
 import com.restaurant.finder.responses.review.ReviewResponse;
 import com.restaurant.finder.service.restaurant.review.ReviewService;
@@ -49,6 +50,8 @@ public class CommentController {
 
     @Autowired
     JwtTokenHelper jwtTokenHelper;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/restaurant/reviews/{reviewId}/comments")
     public ResponseEntity<?> createComment(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody CommentDto commentDto) {
@@ -122,13 +125,13 @@ public class CommentController {
     }
 
     @GetMapping("/restaurant/reviews/comments/{id}")
-    public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(HttpServletRequest request, @PathVariable Long id) {
+    public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(@RequestParam Long userId, @PathVariable Long id) {
 
-        User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
-        if (user == null) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.get() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
-            List<CommentResponse> reviewList = commentService.findAllCommentByReviewId(id, user);
+            List<CommentResponse> reviewList = commentService.findAllCommentByReviewId(id, user.get());
             return new ResponseEntity<>(reviewList, HttpStatus.OK);
         }
     }

@@ -69,6 +69,10 @@ public class JwtTokenHelper {
                 .getBody();
     }
 
+    /**
+     * These methods helps to get the sign-in key by decoding the secretkey
+     * @return Key
+     */
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -89,6 +93,12 @@ public class JwtTokenHelper {
         return buildToken(new HashMap<>(), userName, refreshExpiration);
     }
 
+    /**
+     * @param extraClaims
+     * @param userName
+     * @param expiration
+     * @return String build token which is generated
+     */
     private String buildToken(Map<String, Object> extraClaims, String userName, long expiration) {
         return Jwts.builder()
                 .setIssuer(appName)
@@ -150,6 +160,10 @@ public class JwtTokenHelper {
         }
     }
 
+    /**
+     * @param request
+     * @return the auth header from the request provided
+     */
     public String getAuthHeaderFromHeader(HttpServletRequest request) {
         return request.getHeader("Authorization");
     }
