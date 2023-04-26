@@ -19,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 22042023
  * Copyright (C) 2023 Newcastle University, UK
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().contains("/auth") || request.getServletPath().contains("/restaurant/")) {
+        if (request.getServletPath().contains("/auth") || request.getServletPath().contains("/restaurant/") || request.getServletPath().contains("/restaurants/")) {
             filterChain.doFilter(request, response);
             return;
         }

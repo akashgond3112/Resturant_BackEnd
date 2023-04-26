@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.InputMismatchException;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 25042023
  * Copyright (C) 2023 Newcastle University, UK

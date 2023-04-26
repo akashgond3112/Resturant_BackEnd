@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 15042023
  * Copyright (C) 2023 Newcastle University, UK

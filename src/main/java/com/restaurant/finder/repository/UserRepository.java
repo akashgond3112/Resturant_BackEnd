@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 15042023
  *       Copyright (C) 2023 Newcastle University, UK

@@ -5,7 +5,7 @@ import lombok.*;
 import javax.validation.constraints.NotEmpty;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 25042023
  * Copyright (C) 2023 Newcastle University, UK

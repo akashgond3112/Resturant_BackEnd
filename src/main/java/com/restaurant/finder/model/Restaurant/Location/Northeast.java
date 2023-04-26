@@ -1,7 +1,7 @@
 package com.restaurant.finder.model.Restaurant.Location;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 14march2023 Copyright (C) 2023 Newcastle University, UK
  */
