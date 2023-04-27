@@ -47,14 +47,21 @@ public class CommentController {
     @Autowired
     private UserRepository userRepository;
 
+
     /**
-     * @param request    expect the HTTP Request
-     * @param reviewId   expect the review id for which comment will be added
-     * @param commentDto an commentDto object to be added
-     * @return CommentResponse object
+     * This class handles the creation of a comment for a given review.
+     * The endpoint "/restaurant/reviews/{reviewId}/comments" is accessed via a POST request.
+     * If the user's token has expired, a 401 Unauthorized response is returned.
+     * If the user or the review specified by the reviewId cannot be found, a 400 Bad Request response is returned.
+     * The comment is saved using the commentService, and the response contains the saved comment and a 201 Created status code.
+     *
+     * @param request    The HTTP servlet request containing the user's token
+     * @param reviewId   The ID of the review to which the comment will be added
+     * @param commentDto The CommentDto object containing the content of the comment
+     * @return A ResponseEntity with either the saved comment and a 201 Created status code or an error message and an appropriate status code.
      * @throws InputMismatchException if the request was incorrect
      * @throws TokeExpiredException   if the token expired
-     */
+     **/
     @PostMapping("/restaurant/reviews/{reviewId}/comments")
     public ResponseEntity<?> createComment(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody CommentDto commentDto) {
 
@@ -76,10 +83,12 @@ public class CommentController {
     }
 
     /**
-     * @param request    expect the HTTP Request
-     * @param id         expect the comment id for which comment will be updated
-     * @param commentDto expect commentDto object to be updated
-     * @return updated CommentResponse object
+     * Controller to handle HTTP requests related to updating a comment for a restaurant review.
+     *
+     * @param request    The HTTP servlet request object.
+     * @param id         The ID of the comment to be updated.
+     * @param commentDto The DTO object containing the updated comment details.
+     * @return A ResponseEntity object containing the updated comment and a HTTP status code.
      * @throws InputMismatchException if the request was incorrect
      * @throws TokeExpiredException   if the token expired
      */
@@ -111,8 +120,10 @@ public class CommentController {
     }
 
     /**
+     * Deletes an existing review comment for a given review ID and user.
+     *
      * @param request expect the HTTP Request
-     * @param id expect the comment id to be deleted
+     * @param id      expect the comment id to be deleted
      * @return a status code if its success
      * @throws TokeExpiredException if the token expired
      * @throws NullPointerException if we didn't find any matching review for deleting
@@ -142,9 +153,10 @@ public class CommentController {
     }
 
     /**
-     * @param userId expect an userId
-     * @param reviewId for which we want all the comments
-     * @return  List<CommentResponse></CommentResponse>
+     * Handles HTTP GET requests for retrieving a list of ReviewCommentResponse objects for a specific review id and user id.
+     * @param userId   the id of the user whose likes are to be retrieved, passed as a request parameter
+     * @param reviewId the id of the review whose likes are to be retrieved, passed as a path variable
+     * @return ResponseEntity object containing a list of CommentResponse objects and a HTTP status code indicating the success or failure of the request
      */
     @GetMapping("/restaurant/reviews/comments/{reviewId}")
     public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(@RequestParam Long userId, @PathVariable Long reviewId) {

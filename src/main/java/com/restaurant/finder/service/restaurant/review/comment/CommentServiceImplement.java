@@ -28,6 +28,15 @@ public class CommentServiceImplement implements CommentService {
     @Autowired
     private CommentRepository commentRepository;
 
+
+    /**
+     * Saves a new comment made by a user on a review.
+     *
+     * @param user       the user making the comment
+     * @param review     the review on which the comment is being made
+     * @param commentDto the DTO containing the comment content
+     * @return the CommentResponse object for the new comment
+     */
     @Override
     public CommentResponse saveComment(User user, Review review, CommentDto commentDto) {
 
@@ -39,6 +48,17 @@ public class CommentServiceImplement implements CommentService {
         return getCommentResponse(user, review, comment);
     }
 
+    /**
+     * A method to update an existing comment of a user on a specific review.
+     *
+     * @param commentId  the unique identifier of the comment to be updated.
+     * @param commentDto a DTO containing the new comment details.
+     * @param user       the user who is trying to update the comment.
+     * @param review     the review on which the comment is made.
+     * @return a CommentResponse object containing the updated comment details.
+     * @throws NullPointerException    if any of the request parameters are null.
+     * @throws InvalidRequestException if no comment is found with the matching commentId and userId combination.
+     */
     @Override
     public CommentResponse updateComment(Long commentId, CommentDto commentDto, User user, Review review) {
 
@@ -61,6 +81,14 @@ public class CommentServiceImplement implements CommentService {
         return getCommentResponse(user, review, comment);
     }
 
+    /**
+     * Deletes the comment with the given commentId if it exists and is associated with the given user.
+     *
+     * @param commentId the ID of the comment to be deleted
+     * @param user      the user associated with the comment to be deleted
+     * @throws NullPointerException    if the commentId is null or 0
+     * @throws InvalidRequestException if the comment with the given ID is not associated with the given user
+     */
     @Override
     public void deleteCommentById(Long commentId, User user) {
 
@@ -75,6 +103,15 @@ public class CommentServiceImplement implements CommentService {
 
     }
 
+    /**
+     * Returns a list of CommentResponse objects corresponding to all comments associated with the given review ID.
+     * Throws an InvalidRequestException if the review ID is null or zero.
+     *
+     * @param reviewId the ID of the review associated with the comments
+     * @param user     the user making the request
+     * @return a List of CommentResponse objects containing the comments associated with the given review ID
+     * @throws InvalidRequestException if the review ID is null or zero
+     */
     @Override
     public List<CommentResponse> findAllCommentByReviewId(Long reviewId, User user) {
 
@@ -88,7 +125,15 @@ public class CommentServiceImplement implements CommentService {
         return commentResponseList;
     }
 
-
+    /**
+     * Returns a {@link CommentResponse} object that contains the comment details, such as the restaurant id, review id,
+     * user id, username, comment, and whether the current user can edit and delete the comment.
+     *
+     * @param user    the user who made the comment
+     * @param review  the review the comment is associated with
+     * @param comment the comment being returned
+     * @return a {@link CommentResponse} object that contains the comment details and permissions
+     */
     private CommentResponse getCommentResponse(User user, Review review, Comment comment) {
         return CommentResponse.builder()
                 .restaurantId(review.getRestaurant_id())

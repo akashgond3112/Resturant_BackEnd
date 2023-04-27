@@ -13,6 +13,10 @@ import java.util.List;
  * @Date 15042023
  * Copyright (C) 2023 Newcastle University, UK
  */
+
+/**
+ * A service interface for handling comments related operations for a restaurant review system.
+ */
 public interface CommentService {
     CommentResponse saveComment(User user, Review review, CommentDto commentDto);
 

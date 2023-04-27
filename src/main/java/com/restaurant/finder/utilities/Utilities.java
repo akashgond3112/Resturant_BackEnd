@@ -23,11 +23,11 @@ public class Utilities {
 
     /**
      * @param jwtTokenHelper expect jwtTokenHelper object
-     * @param request expect the HttpServletRequest
-     * @param userService expect userService object
+     * @param request        expect the HttpServletRequest
+     * @param userService    expect userService object
      * @return the user entity object if the token in not expired
      * @throws InputMismatchException if we cannot get the token from the request
-     * @throws TokeExpiredException if the token is expired
+     * @throws TokeExpiredException   if the token is expired
      */
     public static User getCurrentUser(JwtTokenHelper jwtTokenHelper, HttpServletRequest request, UserService userService) {
         final String token;
@@ -50,12 +50,19 @@ public class Utilities {
         return (User) userService.loadUserByUsername(userName);
     }
 
+
     /**
-     * @param jwtTokenHelper expect jwtTokenHelper object
-     * @param request expect the HttpServletRequest
-     * @return the response entity object if the token in not expired
+     * Validates whether the provided JWT token in the HTTP request is expired or not.
+     * If the token is expired, a TokeExpiredException is thrown, otherwise null is returned.
+     *
+     * @param jwtTokenHelper An instance of JwtTokenHelper used to validate the token.
+     * @param request        The HttpServletRequest containing the token to be validated.
+     * @return A ResponseEntity object with HTTP status code 403 (Forbidden) and a message
+     * indicating that the token has expired, or null if the token is valid.
+     * If the request's token is malformed or null, a ResponseEntity with HTTP status code 400 (Bad Request)
+     * is returned.
      * @throws InputMismatchException if we cannot get the token from the request
-     * @throws TokeExpiredException if the token is expired
+     * @throws TokeExpiredException   if the token is expired
      */
     public static ResponseEntity<Object> validateIsTokeExpired(JwtTokenHelper jwtTokenHelper, HttpServletRequest request) {
         final String token;
@@ -67,11 +74,11 @@ public class Utilities {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        try{
+        try {
             if (jwtTokenHelper.isTokenExpired(token)) {
                 throw new TokeExpiredException("Token has been expired");
             }
-        }catch (TokeExpiredException tokeExpiredException){
+        } catch (TokeExpiredException tokeExpiredException) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Token has been expired");
         }
         return null;
