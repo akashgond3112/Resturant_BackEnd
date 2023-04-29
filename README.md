@@ -34,8 +34,6 @@
             spring.datasource.password=<PASSWORD>
             spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
             spring.jpa.show-sql=true
-            spring.jpa.generate-ddl=true
-            spring.jpa.hibernate.ddl-auto = create 
             #Goodge api details
             external.google.api.key=<GOOGLE_API_KEY>
             external.google.api.url=maps.googleapis.com
