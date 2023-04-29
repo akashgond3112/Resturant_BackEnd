@@ -48,7 +48,78 @@
             jwt.auth.secret_key=<SECRET_KEY>
             jwt.auth.expires_in=3600
             jwt.auth.refresh.token.expires_in=3600
-
+* Running the Queries to insert the tables:
+  *   code`create table restaurants
+      (
+      id      int auto_increment
+      primary key,
+      name    varchar(255) not null,
+      address varchar(255) not null
+      );`
+  * code `create table users
+    (
+    id            int auto_increment
+    primary key,
+    username      varchar(255) not null,
+    email         varchar(255) not null,
+    password      varchar(255) not null,
+    gender        varchar(10)  null,
+    role          varchar(10)  null,
+    mobile_Number varchar(15)  null
+    );`
+  * code `create table reviews
+    (
+    id                 int auto_increment
+    primary key,
+    user_id            int                                 not null,
+    restaurant_id      int                                 not null,
+    rating             int                                 not null,
+    review             text                                null,
+    likes              int       default 0                 null,
+    created_at         timestamp default CURRENT_TIMESTAMP null,
+    updated_at         timestamp default CURRENT_TIMESTAMP null,
+    dine_in_available  varchar(5)                          null,
+    delivery_available varchar(5)                          null,
+    constraint reviews_ibfk_1
+    foreign key (user_id) references users (id)
+    );`
+  * code `create index restaurant_id
+    on reviews (restaurant_id);`
+  * code `create index user_id
+    on reviews (user_id);`
+  * code `create table review_comments
+    (
+    id         int auto_increment
+    primary key,
+    user_id    int                                 not null,
+    review_id  int                                 not null,
+    comment    text                                not null,
+    created_at timestamp default CURRENT_TIMESTAMP null,
+    updated_at timestamp default CURRENT_TIMESTAMP null,
+    constraint review_comments_ibfk_1
+    foreign key (user_id) references users (id),
+    constraint review_comments_ibfk_2
+    foreign key (review_id) references reviews (id)
+    on delete cascade
+    );`
+  * code `create index user_id
+    on review_comments (user_id);`
+  * code `create table review_likes
+    (
+    id         int auto_increment
+    primary key,
+    user_id    int                                 not null,
+    review_id  int                                 not null,
+    created_at timestamp default CURRENT_TIMESTAMP null,
+    updated_at timestamp default CURRENT_TIMESTAMP null,
+    constraint review_likes_ibfk_1
+    foreign key (user_id) references users (id),
+    constraint review_likes_ibfk_2
+    foreign key (review_id) references reviews (id)
+    on delete cascade
+    );`
+  * code `create index user_id
+    on review_likes (user_id);`
 
 
 # How to Run the Application?
