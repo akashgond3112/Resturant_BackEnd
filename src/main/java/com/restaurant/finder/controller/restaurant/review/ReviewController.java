@@ -136,10 +136,10 @@ public class ReviewController {
     /**
      * @param userId expect an userId
      * @param restaurantId expect an restaurantId
-     * @return List<ReviewResponse></ReviewResponse>
+     * @return List<ReviewResponse></ReviewResponse> 
      */
     @GetMapping("/restaurant/reviews/{restaurantId}")
-    public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(@RequestParam Long userId, @PathVariable Long restaurantId) {
+    public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(@RequestParam Long userId, @PathVariable String restaurantId) {
 
         Optional<User> user = userRepository.findById(userId);
         if (user.get() == null) {

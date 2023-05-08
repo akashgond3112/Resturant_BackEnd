@@ -18,11 +18,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CommentResponse {
 
-    private int restaurantId;
+    private String restaurantId;
     private Long reviewId;
     private Long userId;
     private String userName;
     private String comment;
     private boolean canEdit;
     private boolean canDelete;
+    private String createdDate;
+    private long timePast;
 }

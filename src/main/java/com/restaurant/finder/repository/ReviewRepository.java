@@ -21,7 +21,7 @@ import java.util.Optional;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE r.restaurant_id = :restaurantId")
-    List<Review> findReviewsByRestaurant_id(@Param("restaurantId") Long restaurantId);
+    List<Review> findReviewsByRestaurant_id(@Param("restaurantId") String restaurantId);
 
     Review findByIdAndUserId(Long id, Long user_id );
 

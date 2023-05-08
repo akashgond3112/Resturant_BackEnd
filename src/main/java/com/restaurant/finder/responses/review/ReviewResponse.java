@@ -2,9 +2,11 @@ package com.restaurant.finder.responses.review;
 
 import com.restaurant.finder.responses.comment.CommentResponse;
 import com.restaurant.finder.responses.likes.ReviewLikeResponse;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 /**
@@ -23,7 +25,7 @@ public class ReviewResponse {
     private Long reviewId;
     private Long userId;
     private String userName;
-    private int restaurantId;
+    private String restaurantId;
     private Integer rating;
     private String review;
     private List<ReviewLikeResponse> likes;
@@ -32,4 +34,6 @@ public class ReviewResponse {
     private String dineInAvailable;
     private boolean canEdit;
     private boolean canDelete;
+    private String createdDate;
+    private long timePast;
 }

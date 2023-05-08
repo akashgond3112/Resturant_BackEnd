@@ -112,7 +112,7 @@ public class JwtTokenHelper {
 
     /*Parse the token and generate expiration date and time.*/
     private Date generateExpirationDate(long expiresInDateTime) {
-        return new Date(new Date().getTime() + expiresInDateTime * 1000);
+        return new Date(new Date().getTime() + expiresInDateTime);
     }
 
     /*When ever a request comes from the authenticated user we will validate if the
