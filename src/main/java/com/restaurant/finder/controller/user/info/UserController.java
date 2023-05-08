@@ -64,7 +64,7 @@ public class UserController {
      * @param principal expect a current user principal object
      * @return List<User></User> only the role of the user is admin else return forbidden error
      */
-    @GetMapping("auth/users")
+    @GetMapping("/auth/users")
     public ResponseEntity<List<UserResponse>> getUsers(Principal principal) {
 
         User matchingUser = (User) userService.loadUserByUsername(principal.getName());
