@@ -21,6 +21,7 @@ import javax.validation.constraints.Size;
 @Builder
 public class UserResponse {
 
+    private long userId;
     private String userName;
     private String email;
     private String mobileNumber;

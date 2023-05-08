@@ -1,9 +1,9 @@
 package com.restaurant.finder.controller.user.info;
 
 import com.restaurant.finder.config.auth.JwtTokenHelper;
-import com.restaurant.finder.dto.UserDto;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.enums.Role;
+import com.restaurant.finder.responses.user.UserResponse;
 import com.restaurant.finder.service.user.UserService;
 import com.restaurant.finder.utilities.Utilities;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,15 +49,13 @@ public class UserController {
         }
 
         User user = Utilities.getCurrentUser(jwtTokenHelper, request, userService);
-
         if (user != null) {
-            UserDto userDto = new UserDto();
-            userDto.setEmail(user.getEmail());
-            userDto.setUserName(user.getUsername());
-            userDto.setGender(user.getGender());
-            userDto.setMobileNumber(user.getMobileNumber());
-
-            return ResponseEntity.ok(userDto);
+            return ResponseEntity.ok(UserResponse.builder()
+                    .userId(user.getId())
+                    .userName(user.getUsername())
+                    .email(user.getEmail())
+                    .gender(user.getGender())
+                    .mobileNumber(user.getMobileNumber()).build());
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -66,12 +65,23 @@ public class UserController {
      * @return List<User></User> only the role of the user is admin else return forbidden error
      */
     @GetMapping("auth/users")
-    public ResponseEntity<List<User>> getUsers(Principal principal) {
+    public ResponseEntity<List<UserResponse>> getUsers(Principal principal) {
 
-        User user = (User) userService.loadUserByUsername(principal.getName());
-        if (user.getRole().equals(Role.ADMIN)) {
+        User matchingUser = (User) userService.loadUserByUsername(principal.getName());
+        if (matchingUser.getRole().equals(Role.ADMIN)) {
             List<User> users = userService.findAllUsers();
-            return new ResponseEntity<>(users, HttpStatus.FOUND);
+            List<UserResponse> userResponseList = new ArrayList<>();
+            users.forEach(user -> {
+                userResponseList.add(
+                        UserResponse.builder()
+                                .userId(user.getId())
+                                .userName(user.getUsername())
+                                .email(user.getEmail())
+                                .gender(user.getGender())
+                                .mobileNumber(user.getMobileNumber()).build()
+                );
+            });
+            return new ResponseEntity<>(userResponseList, HttpStatus.FOUND);
         }
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
