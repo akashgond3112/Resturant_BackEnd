@@ -22,7 +22,7 @@ public class ReviewDto {
     @NotEmpty(message = "userId should not be empty")
     private Long userId;
     @NotEmpty(message = "restaurant_id should not be empty")
-    private int restaurantId;
+    private String restaurantId;
     @NotEmpty(message = "rating should not be empty")
     private Integer rating;
     @NotEmpty(message = "review should not be empty")

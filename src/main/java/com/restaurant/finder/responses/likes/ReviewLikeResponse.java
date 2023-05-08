@@ -18,10 +18,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ReviewLikeResponse {
 
-    private int restaurantId;
+    private String restaurantId;
     private Long reviewId;
     private Long reviewLikeId;
     private Long userId;
     private String userName;
     private boolean canRemoveLike;
+    private String createdDate;
+    private long timePast;
 }

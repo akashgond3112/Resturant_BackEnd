@@ -1,7 +1,6 @@
 package com.restaurant.finder.service.restaurant.review;
 
 import com.restaurant.finder.dto.ReviewDto;
-import com.restaurant.finder.entity.Comment;
 import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
@@ -15,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,8 @@ public class ReviewServiceImplement implements ReviewService {
     private CommentRepository commentRepository;
     @Autowired
     private ReviewLikeRepository reviewLikeRepository;
+    // Create DateTimeFormatter instance with specified format
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     /**
      * @param reviewDto except and object with all the mandatory review information
@@ -122,8 +126,8 @@ public class ReviewServiceImplement implements ReviewService {
      * @throws InvalidRequestException if restaurant_id is empty or null
      */
     @Override
-    public List<ReviewResponse> findAllReviewByRestaurantId(Long restaurant_id, User user) {
-        if (restaurant_id == null || restaurant_id == 0)
+    public List<ReviewResponse> findAllReviewByRestaurantId(String restaurant_id, User user) {
+        if (restaurant_id == null || restaurant_id.isEmpty())
             throw new InvalidRequestException("The restaurant_id must not be non-null or 0");
 
         List<ReviewResponse> reviewResponseList = new ArrayList<>();
@@ -146,7 +150,9 @@ public class ReviewServiceImplement implements ReviewService {
                 .deliveryAvailable(review.getDeliveryAvailable())
                 .dineInAvailable(review.getDineInAvailable())
                 .canEdit(review.getUser().getId().equals(user.getId()))
-                .canDelete(review.getUser().getId().equals(user.getId())).build();
+                .canDelete(review.getUser().getId().equals(user.getId()))
+                .createdDate(review.getCreated_at().format(dateTimeFormatter))
+                .timePast(daysAgo(review.getCreated_at())).build();
     }
 
     private List<CommentResponse> getCommentResponseList(User user, Review review) {
@@ -160,7 +166,9 @@ public class ReviewServiceImplement implements ReviewService {
                     .userName(user.getUsername())
                     .comment(comment.getComment())
                     .canEdit(comment.getUser().getId().equals(user.getId()))
-                    .canDelete(comment.getUser().getId().equals(user.getId())).build());
+                    .canDelete(comment.getUser().getId().equals(user.getId()))
+                    .createdDate(comment.getCreated_at().format(dateTimeFormatter))
+                    .timePast(daysAgo(comment.getCreated_at())).build());
         });
         return commentResponseList;
     }
@@ -176,11 +184,18 @@ public class ReviewServiceImplement implements ReviewService {
                             .reviewLikeId(reviewLike.getId())
                             .userId(user.getId())
                             .userName(user.getUsername())
-                            .canRemoveLike(reviewLike.getUser().getId().equals(user.getId())).build()
+                            .canRemoveLike(reviewLike.getUser().getId().equals(user.getId()))
+                            .createdDate(reviewLike.getCreated_at().format(dateTimeFormatter))
+                            .timePast(daysAgo(review.getCreated_at())).build()
             );
         });
         return reviewLikeResponses;
 
+    }
+
+    public static long daysAgo(LocalDateTime date) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        return Duration.between(date, currentDateTime).toDays();
     }
 }
 

@@ -30,7 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin
+@CrossOrigin("http://localhost:3000")
 public class AuthenticationController {
 
     @Autowired
@@ -51,53 +51,11 @@ public class AuthenticationController {
      */
     @PostMapping("/auth/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest) {
-        final Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                authenticationRequest.getUsername(), authenticationRequest.getPassword()
-        ));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        User user = (User) authentication.getPrincipal();
-        AuthenticationResponse authenticationResponse = new AuthenticationResponse();
-
-        /*Firs check if user has already logged in earlier has a token which is not expired and still valid*/
-        List<Token> tokens = tokenRepository.findAllByUser(user);
-
-        /*Here we will check if there is an assigned token for the user
-         * If that token is new*/
-        if (tokens.size() > 0) {
-            for (Token token : tokens) {
-                if (jwtTokenHelper.isTokenExpired(token.getToken())) {
-                    String jwtToken = jwtTokenHelper.generateToken(user.getUsername());
-                    token.setRevoked(false);
-                    token.setExpired(false);
-                    token.setToken(jwtToken);
-                    tokenRepository.save(token);
-                    authenticationResponse.setAccessToken(token.getToken());
-                    break;
-                } else {
-                    authenticationResponse.setAccessToken(token.getToken());
-                }
-            }
-        } else {
-            /*This only implies isf user is login for first time and there is no entry in the database*/
-            String jwtToken = jwtTokenHelper.generateToken(user.getUsername());
-            Token token = Token.builder()
-                    .user(user)
-                    .token(jwtToken)
-                    .tokenType(TokenType.BEARER)
-                    .expired(false)
-                    .revoked(false)
-                    .build();
-            tokenRepository.save(token);
-            authenticationResponse.setAccessToken(token.getToken());
-        }
-
-        return ResponseEntity.ok(authenticationResponse);
+        return ResponseEntity.ok(userService.login(authenticationRequest, authenticationManager));
     }
 
     /**
-     * @param request request include the current token of the user
+     * @param request  request include the current token of the user
      * @param response response as refresh token
      * @throws IOException if we cannot find the matching token
      */

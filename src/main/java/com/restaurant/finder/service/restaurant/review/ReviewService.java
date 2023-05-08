@@ -22,6 +22,6 @@ public interface ReviewService {
 
     void deleteById(Long reviewId, User user);
 
-    List<ReviewResponse> findAllReviewByRestaurantId(Long restaurantId, User user);
+    List<ReviewResponse> findAllReviewByRestaurantId(String restaurantId, User user);
 
 }

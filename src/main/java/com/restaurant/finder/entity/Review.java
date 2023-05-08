@@ -36,7 +36,7 @@ public class Review {
     private User user;
 
     @Column(name = "restaurant_id", nullable = false, updatable = false)
-    private Integer restaurant_id;
+    private String restaurant_id;
 
     @Column(nullable = false, name = "rating")
     private Integer rating;

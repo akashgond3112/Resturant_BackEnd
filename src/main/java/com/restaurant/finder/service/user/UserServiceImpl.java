@@ -1,6 +1,7 @@
 package com.restaurant.finder.service.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.restaurant.finder.responses.authentication.AuthenticationRequest;
 import com.restaurant.finder.responses.authentication.AuthenticationResponse;
 import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.dto.UserDto;
@@ -14,6 +15,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -48,7 +51,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public AuthenticationResponse register(UserDto userDto) {
         User user = new User();
-        user.setUsername(userDto.getUserName());
+        user.setUsername(userDto.getUserName().replaceAll(" ", ""));
         user.setEmail(userDto.getEmail());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRole(Role.USER);
@@ -58,6 +61,24 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         String jwtToken = jwtTokenHelper.generateToken(user.getUsername());
         String refreshToken = jwtTokenHelper.generateRefreshToken(user.getUsername());
 
+        saveUserToken(user, jwtToken);
+        return AuthenticationResponse.builder()
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public AuthenticationResponse login(AuthenticationRequest request, AuthenticationManager authenticationManager) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
+        var user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+        var jwtToken = jwtTokenHelper.generateToken(user.getUsername());
+        var refreshToken = jwtTokenHelper.generateRefreshToken(user.getUsername());
+        revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
@@ -78,7 +99,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) {
         try {
-            return userRepository.findByUsername(username);
+            return userRepository.findByUsername(username).orElseThrow();
         } catch (UsernameNotFoundException usernameNotFoundException) {
             throw usernameNotFoundException;
         }
@@ -119,7 +140,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         refreshToken = authHeader.substring(7);
         String username = jwtTokenHelper.getUsernameFromToken(refreshToken);
         if (username != null) {
-            User user = userRepository.findByUsername(username);
+            User user = userRepository.findByUsername(username).orElseThrow();
 
             if (jwtTokenHelper.validateToken(refreshToken, user)) {
                 var accessToken = jwtTokenHelper.generateToken(user.getUsername());
