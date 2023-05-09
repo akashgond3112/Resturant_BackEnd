@@ -1,9 +1,6 @@
 package com.restaurant.finder.service.restaurant.review;
 
 import com.restaurant.finder.dto.ReviewDto;
-import com.restaurant.finder.entity.Comment;
-import com.restaurant.finder.entity.Review;
-import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.responses.review.ReviewResponse;
 
@@ -23,5 +20,7 @@ public interface ReviewService {
     void deleteById(Long reviewId, User user);
 
     List<ReviewResponse> findAllReviewByRestaurantId(String restaurantId, User user);
+
+    List<ReviewResponse> findAllReviewByRestaurantId(String restaurantId);
 
 }

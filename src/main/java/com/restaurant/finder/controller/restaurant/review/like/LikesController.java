@@ -120,16 +120,31 @@ public class LikesController {
      * @return ResponseEntity object containing a list of ReviewLikeResponse objects and a HTTP status code indicating the success or failure of the request
      */
     @GetMapping("/restaurant/reviews/{reviewId}/likes")
-    public ResponseEntity<List<ReviewLikeResponse>> findLikesByReviewId(@RequestParam Long userId, @PathVariable Long reviewId) {
+    public ResponseEntity<?> findLikesByReviewId(HttpServletRequest request, @RequestParam(name = "userId", required = false) Long userId, @PathVariable Long reviewId) {
 
-        Optional<User> user = userRepository.findById(userId);
-        if (user.get() == null) {
+        if (reviewId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } else {
-            List<ReviewLikeResponse> reviewLikeResponses = likeService.findAllReviewLikeByReviewId(reviewId, user.get());
+        } else if (userId == null || userId == 0) {
+            List<ReviewLikeResponse> reviewLikeResponses = likeService.findAllReviewLikeByReviewId(reviewId);
             return new ResponseEntity<>(reviewLikeResponses, HttpStatus.OK);
+        }else{
+            try{
+                ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
+                if (objectResponseEntity != null) { // check user is authenticated or not or token is expired
+                    throw new RuntimeException("Token was expired! or was empty in header!");
+                }
+                Optional<User> user = userRepository.findById(userId);
+                if (user.get() == null) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                List<ReviewLikeResponse> reviewLikeResponses = likeService.findAllReviewLikeByReviewId(reviewId, user.get());
+                return new ResponseEntity<>(reviewLikeResponses, HttpStatus.OK);
+            }catch (Exception exception){
+                System.out.println("Got an exception , either user was not valid or token was expired, so we will send the default review comment list with no permission to update or delete.");
+                List<ReviewLikeResponse> reviewLikeResponses = likeService.findAllReviewLikeByReviewId(reviewId);
+                return new ResponseEntity<>(reviewLikeResponses, HttpStatus.OK);
+            }
         }
-
     }
 }
 

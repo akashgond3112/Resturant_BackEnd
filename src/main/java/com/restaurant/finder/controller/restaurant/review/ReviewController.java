@@ -2,9 +2,6 @@ package com.restaurant.finder.controller.restaurant.review;
 
 import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.dto.ReviewDto;
-import com.restaurant.finder.entity.Comment;
-import com.restaurant.finder.entity.Review;
-import com.restaurant.finder.entity.ReviewLike;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.exception.TokeExpiredException;
@@ -45,11 +42,11 @@ public class ReviewController {
     private UserRepository userRepository;
 
     /**
-     * @param request expect the HTTP Request
+     * @param request   expect the HTTP Request
      * @param reviewDto an reviewDto object
      * @return the Review response
      * @throws InputMismatchException if the request was incorrect
-     * @throws TokeExpiredException if the token expired
+     * @throws TokeExpiredException   if the token expired
      */
     @PostMapping("/restaurant/reviews")
     public ResponseEntity<?> create(HttpServletRequest request, @RequestBody ReviewDto reviewDto) {
@@ -70,12 +67,12 @@ public class ReviewController {
     }
 
     /**
-     * @param request expect the HTTP Request
-     * @param reviewId expect the review id to be updated
+     * @param request   expect the HTTP Request
+     * @param reviewId  expect the review id to be updated
      * @param reviewDto an review object
-     * @throws InputMismatchException if the request was incorrect
-     * @throws TokeExpiredException if the token expired
      * @return the Review response
+     * @throws InputMismatchException if the request was incorrect
+     * @throws TokeExpiredException   if the token expired
      */
     @PutMapping("/restaurant/reviews/{reviewId}")
     public ResponseEntity<?> update(HttpServletRequest request, @PathVariable Long reviewId, @RequestBody ReviewDto reviewDto) {
@@ -103,7 +100,7 @@ public class ReviewController {
     }
 
     /**
-     * @param request expect the HTTP Request
+     * @param request  expect the HTTP Request
      * @param reviewId expect the review id to be deleted
      * @return a status code if its success
      * @throws TokeExpiredException if the token expired
@@ -134,19 +131,36 @@ public class ReviewController {
     }
 
     /**
-     * @param userId expect an userId
+     * @param userId       expect an userId
      * @param restaurantId expect an restaurantId
-     * @return List<ReviewResponse></ReviewResponse> 
+     * @return List<ReviewResponse></ReviewResponse>
      */
     @GetMapping("/restaurant/reviews/{restaurantId}")
-    public ResponseEntity<List<ReviewResponse>> findAllReviewsByRestaurantId(@RequestParam Long userId, @PathVariable String restaurantId) {
+    public ResponseEntity<?> findAllReviewsByRestaurantId(HttpServletRequest request, @RequestParam(name = "userId", required = false) Long userId, @PathVariable String restaurantId) {
 
-        Optional<User> user = userRepository.findById(userId);
-        if (user.get() == null) {
+        if (restaurantId == null || restaurantId.isEmpty() || restaurantId.isBlank()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } else {
-            List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId, user.get());
+        } else if (userId == null || userId == 0) {
+            List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId);
             return new ResponseEntity<>(reviewList, HttpStatus.OK);
+        } else {
+            try {
+                ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
+                if (objectResponseEntity != null) { // check user is authenticated or not or token is expired
+                    throw new RuntimeException("Token was expired! or was empty in header!");
+                }
+                Optional<User> user = userRepository.findById(userId);
+                if (user.get() == null) { // check if we find the matching user details
+                    throw new RuntimeException("Cannot find the matching user!!");
+                }
+                List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId, user.get());
+                return new ResponseEntity<>(reviewList, HttpStatus.OK);
+            } catch (Exception exception) {
+                System.out.println("Got an exception , either user was not valid or token was expired, so we will send the default review list with no permission to update or delete.");
+                List<ReviewResponse> reviewList = reviewService.findAllReviewByRestaurantId(restaurantId); // send the default review list with not access to edit access for the review provided by the requested user
+                return new ResponseEntity<>(reviewList, HttpStatus.PARTIAL_CONTENT);
+            }
+
         }
     }
 }
