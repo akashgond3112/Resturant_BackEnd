@@ -137,6 +137,23 @@ public class ReviewServiceImplement implements ReviewService {
         return reviewResponseList;
     }
 
+    /**
+     * @param restaurant_id expect restaurant_id to fetch all the reviews for the given restaurant ID
+     * @return List<Review>
+     * @throws InvalidRequestException if restaurant_id is empty or null
+     */
+    @Override
+    public List<ReviewResponse> findAllReviewByRestaurantId(String restaurant_id) {
+        if (restaurant_id == null || restaurant_id.isEmpty())
+            throw new InvalidRequestException("The restaurant_id must not be non-null or 0");
+
+        List<ReviewResponse> reviewResponseList = new ArrayList<>();
+        restaurantReviewRepository.findReviewsByRestaurant_id(restaurant_id).forEach(review -> {
+            reviewResponseList.add(getReviewResponse(null, review));
+        });
+        return reviewResponseList;
+    }
+
     private ReviewResponse getReviewResponse(User user, Review review) {
         return ReviewResponse.builder()
                 .reviewId(review.getId())
@@ -149,8 +166,8 @@ public class ReviewServiceImplement implements ReviewService {
                 .likes(getReviewLikeResponseList(user, review))
                 .deliveryAvailable(review.getDeliveryAvailable())
                 .dineInAvailable(review.getDineInAvailable())
-                .canEdit(review.getUser().getId().equals(user.getId()))
-                .canDelete(review.getUser().getId().equals(user.getId()))
+                .canEdit(user != null && review.getUser().getId().equals(user.getId()))
+                .canDelete(user != null && review.getUser().getId().equals(user.getId()))
                 .createdDate(review.getCreated_at().format(dateTimeFormatter))
                 .timePast(daysAgo(review.getCreated_at())).build();
     }
@@ -165,8 +182,8 @@ public class ReviewServiceImplement implements ReviewService {
                     .userId(user.getId())
                     .userName(user.getUsername())
                     .comment(comment.getComment())
-                    .canEdit(comment.getUser().getId().equals(user.getId()))
-                    .canDelete(comment.getUser().getId().equals(user.getId()))
+                    .canEdit(user != null && comment.getUser().getId().equals(user.getId()))
+                    .canDelete(user != null && comment.getUser().getId().equals(user.getId()))
                     .createdDate(comment.getCreated_at().format(dateTimeFormatter))
                     .timePast(daysAgo(comment.getCreated_at())).build());
         });
@@ -184,7 +201,7 @@ public class ReviewServiceImplement implements ReviewService {
                             .reviewLikeId(reviewLike.getId())
                             .userId(user.getId())
                             .userName(user.getUsername())
-                            .canRemoveLike(reviewLike.getUser().getId().equals(user.getId()))
+                            .canRemoveLike(user != null && reviewLike.getUser().getId().equals(user.getId()))
                             .createdDate(reviewLike.getCreated_at().format(dateTimeFormatter))
                             .timePast(daysAgo(review.getCreated_at())).build()
             );

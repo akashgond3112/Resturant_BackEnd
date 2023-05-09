@@ -6,13 +6,12 @@ import com.restaurant.finder.entity.Review;
 import com.restaurant.finder.entity.User;
 import com.restaurant.finder.exception.InvalidRequestException;
 import com.restaurant.finder.repository.CommentRepository;
-import com.restaurant.finder.repository.ReviewLikeRepository;
-import com.restaurant.finder.repository.ReviewRepository;
-import com.restaurant.finder.repository.UserRepository;
 import com.restaurant.finder.responses.comment.CommentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,6 +125,27 @@ public class CommentServiceImplement implements CommentService {
     }
 
     /**
+     * Returns a list of CommentResponse objects corresponding to all comments associated with the given review ID.
+     * Throws an InvalidRequestException if the review ID is null or zero.
+     *
+     * @param reviewId the ID of the review associated with the comments
+     * @return a List of CommentResponse objects containing the comments associated with the given review ID
+     * @throws InvalidRequestException if the review ID is null or zero
+     */
+    @Override
+    public List<CommentResponse> findAllCommentByReviewId(Long reviewId) {
+
+        if (reviewId == null || reviewId == 0)
+            throw new InvalidRequestException("The reviewId must not be non-null or 0");
+        List<CommentResponse> commentResponseList = new ArrayList<>();
+        commentRepository.findAllByReviewId(reviewId).forEach(comment -> {
+            commentResponseList.add(getCommentResponse(null, comment.getReview(), comment));
+        });
+
+        return commentResponseList;
+    }
+
+    /**
      * Returns a {@link CommentResponse} object that contains the comment details, such as the restaurant id, review id,
      * user id, username, comment, and whether the current user can edit and delete the comment.
      *
@@ -141,9 +161,14 @@ public class CommentServiceImplement implements CommentService {
                 .userId(user.getId())
                 .userName(user.getUsername())
                 .comment(comment.getComment())
-                .canEdit(comment.getUser().getId().equals(user.getId()))
-                .canDelete(comment.getUser().getId().equals(user.getId())).build();
+                .canEdit(user != null && comment.getUser().getId().equals(user.getId()))
+                .canDelete(user != null && comment.getUser().getId().equals(user.getId()))
+                .timePast(daysAgo(comment.getCreated_at())).build();
     }
 
+    public static long daysAgo(LocalDateTime date) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        return Duration.between(date, currentDateTime).toDays();
+    }
 }
 

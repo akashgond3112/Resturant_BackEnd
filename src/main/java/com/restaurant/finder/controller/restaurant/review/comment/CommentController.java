@@ -154,19 +154,36 @@ public class CommentController {
 
     /**
      * Handles HTTP GET requests for retrieving a list of ReviewCommentResponse objects for a specific review id and user id.
+     *
      * @param userId   the id of the user whose likes are to be retrieved, passed as a request parameter
      * @param reviewId the id of the review whose likes are to be retrieved, passed as a path variable
      * @return ResponseEntity object containing a list of CommentResponse objects and a HTTP status code indicating the success or failure of the request
      */
     @GetMapping("/restaurant/reviews/comments/{reviewId}")
-    public ResponseEntity<List<CommentResponse>> findAllCommentsByReviewId(@RequestParam Long userId, @PathVariable Long reviewId) {
+    public ResponseEntity<?> findAllCommentsByReviewId(HttpServletRequest request, @RequestParam(name = "userId", required = false) Long userId, @PathVariable Long reviewId) {
 
-        Optional<User> user = userRepository.findById(userId);
-        if (user.get() == null) {
+        if (reviewId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else if (userId == null || userId == 0) {
+            List<CommentResponse> commentResponses = commentService.findAllCommentByReviewId(reviewId);
+            return new ResponseEntity<>(commentResponses, HttpStatus.OK);
         } else {
-            List<CommentResponse> reviewList = commentService.findAllCommentByReviewId(reviewId, user.get());
-            return new ResponseEntity<>(reviewList, HttpStatus.OK);
+            try {
+                ResponseEntity<Object> objectResponseEntity = Utilities.validateIsTokeExpired(jwtTokenHelper, request);
+                if (objectResponseEntity != null) { // check user is authenticated or not or token is expired
+                    throw new RuntimeException("Token was expired! or was empty in header!");
+                }
+                Optional<User> user = userRepository.findById(userId);
+                if (user.get() == null) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                List<CommentResponse> commentResponses = commentService.findAllCommentByReviewId(reviewId, user.get());
+                return new ResponseEntity<>(commentResponses, HttpStatus.OK);
+            } catch (Exception exception) {
+                System.out.println("Got an exception , either user was not valid or token was expired, so we will send the default review comment list with no permission to update or delete.");
+                List<CommentResponse> commentResponses = commentService.findAllCommentByReviewId(reviewId);
+                return new ResponseEntity<>(commentResponses, HttpStatus.OK);
+            }
         }
     }
 

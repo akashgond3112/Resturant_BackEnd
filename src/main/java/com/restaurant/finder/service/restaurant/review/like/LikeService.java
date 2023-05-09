@@ -19,4 +19,5 @@ public interface LikeService {
     void deleteReviewLikeById(Long likeId, User user);
 
     List<ReviewLikeResponse> findAllReviewLikeByReviewId(Long reviewId, User user);
+    List<ReviewLikeResponse> findAllReviewLikeByReviewId(Long reviewId);
 }

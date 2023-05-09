@@ -9,6 +9,8 @@ import com.restaurant.finder.responses.likes.ReviewLikeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +90,28 @@ public class LikeServiceImplement implements LikeService {
     }
 
     /**
+     * Retrieves a list of ReviewLikeResponse objects based on the given review ID.
+     *
+     * @param reviewId the ID of the review to search for review likes
+     * @return a list of ReviewLikeResponse objects
+     * @throws InvalidRequestException if the reviewId is null or 0
+     */
+    @Override
+    public List<ReviewLikeResponse> findAllReviewLikeByReviewId(Long reviewId) {
+
+        if (reviewId == null || reviewId == 0)
+            throw new InvalidRequestException("The reviewId must not be non-null or 0");
+
+        List<ReviewLikeResponse> reviewLikeResponses = new ArrayList<>();
+
+        reviewLikeRepository.findAllByReviewId(reviewId).forEach(reviewLike -> {
+            reviewLikeResponses.add(getReviewLikeResponse(null, reviewLike.getReview(), reviewLike));
+        });
+
+        return reviewLikeResponses;
+    }
+
+    /**
      * Generates a {@link ReviewLikeResponse} object for a given user, review, and review like.
      * The method takes in the user, review, and review like information and constructs a ReviewLikeResponse object
      * using the data. The method determines if the user can remove the like by checking if the user id of the review like
@@ -103,9 +127,14 @@ public class LikeServiceImplement implements LikeService {
                 .restaurantId(review.getRestaurant_id())
                 .reviewId(review.getId())
                 .reviewLikeId(reviewLike.getId())
-                .userId(user.getId())
-                .userName(user.getUsername())
-                .canRemoveLike(reviewLike.getUser().getId().equals(user.getId())).build();
+                .userId(reviewLike.getUser().getId())
+                .userName(reviewLike.getUser().getUsername())
+                .canRemoveLike(user != null &&  reviewLike.getUser().getId().equals(user.getId()))
+                .timePast(daysAgo(reviewLike.getCreated_at())).build();
     }
 
+    public static long daysAgo(LocalDateTime date) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        return Duration.between(date, currentDateTime).toDays();
+    }
 }
