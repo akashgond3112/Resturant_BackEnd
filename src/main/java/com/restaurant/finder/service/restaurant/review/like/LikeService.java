@@ -7,7 +7,7 @@ import com.restaurant.finder.responses.likes.ReviewLikeResponse;
 import java.util.List;
 
 /**
- * @author akash.gond
+ * @author Team-alpha
  * @Project spring-boot-library
  * @Date 26042023
  * Copyright (C) 2023 Newcastle University, UK
