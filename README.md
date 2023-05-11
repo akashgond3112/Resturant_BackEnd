@@ -62,17 +62,17 @@
     mobile_Number varchar(15) null
     );`
   * code `create table reviews (
-    id int auto_increment primary key,
-    user_id int not null,
-    restaurant_id int not null,
+    id bigint auto_increment primary key,
+    created_at datetime(6) not null,
+    delivery_available varchar(255) null,
+    dine_in_available varchar(255) null,
+    likes int null,
     rating int not null,
-    review text null,
-    likes int default 0 null,
-    created_at timestamp default CURRENT_TIMESTAMP null,
-    updated_at timestamp default CURRENT_TIMESTAMP null,
-    dine_in_available varchar(5) null,
-    delivery_available varchar(5) null,
-    constraint reviews_ibfk_1 foreign key (user_id) references users (id)
+    restaurant_id varchar(50) not null,
+    review varchar(255) not null,
+    updated_at datetime(6) not null,
+    user_id bigint not null,
+    constraint FKcgy7qjc1r99dp117y9en6lxye foreign key (user_id) references users (id)
     );`
   * code `create index restaurant_id on reviews (restaurant_id);`
   * code `create index user_id on reviews (user_id);`
@@ -106,6 +106,16 @@
         If you want to run the application in an IDE, we recommend using IntelliJ IDE.
         Using Maven command: mvn spring-boot:run (You need to be in the project directory folder.)
 
-Markup : 
-- [ ] An uncompleted task
-- [x] A completed task
+References : 
+- [x] SPRING BOOT - https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/
+- [x] SPRING SECURITY - https://docs.spring.io/spring-security/reference/6.0-SNAPSHOT/index.html
+- [x] MYSQL - https://dev.mysql.com/doc/
+- [x] SPRING SECURITY TUTORIAL - https://www.youtube.com/watch?v=BRl2ZHqF-wQ&list=PL82C6-O4XrHe3sDCodw31GjXbwRdCyyuY&index=10%20link
+- [x] AZURE APP SERVICES - https://learn.microsoft.com/en-us/azure/app-service/quickstart-java?pivots=platform-linux-development-environment-maven&tabs=javase
+- [x] AZURE MY SQL - https://learn.microsoft.com/en-us/azure/mysql/
+- [x] LOMBOK - https://projectlombok.org/features/
+- [x] GOOGLE PLACE DETAILS - https://developers.google.com/maps/documentation/places/web-service/details
+- [x] GOOGLE PHOTOS API - https://developers.google.com/maps/documentation/places/web-service/photos
+- [X] GOOGLE PLACE SEARCH - https://developers.google.com/maps/documentation/places/web-service/search
+- [X] GOOGLE NEARBY SEARCH - https://developers.google.com/maps/documentation/places/web-service/search-nearby
+
