@@ -3,7 +3,6 @@ package com.restaurant.finder.config;
 import com.restaurant.finder.config.auth.JwtAuthenticationFilter;
 import com.restaurant.finder.config.auth.JwtTokenHelper;
 import com.restaurant.finder.config.auth.RestAuthenticationEntryPoint;
-import com.restaurant.finder.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
