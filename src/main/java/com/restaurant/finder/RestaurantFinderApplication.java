@@ -13,8 +13,6 @@ public class RestaurantFinderApplication {
 	@Value("${external.react.frontend.app.url}")
 	private String corsUrl;
 
-	private final String theAllowedOrigins = corsUrl;
-
 	public static void main(String[] args) {
 		SpringApplication.run(RestaurantFinderApplication.class, args);
 	}
@@ -27,7 +25,7 @@ public class RestaurantFinderApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry corsRegistry) {
 				corsRegistry.addMapping("/**")
-						.allowedOrigins(theAllowedOrigins);
+						.allowedOrigins(corsUrl);
 			}
 		};
 	}
