@@ -27,7 +27,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin(origins = "${external.react.frontend.app.url}")
 public class UserController {
 
     @Autowired
