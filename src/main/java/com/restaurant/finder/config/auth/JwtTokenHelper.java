@@ -47,7 +47,7 @@ public class JwtTokenHelper {
     private int refreshExpiration;
 
     /*The signature algorithm we are using ot create the token*/
-    private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
+    private final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
 
     @Autowired
     private TokenRepository tokenRepository;
@@ -161,7 +161,7 @@ public class JwtTokenHelper {
     }
 
     /**
-     * @param request
+     * @param request Http request
      * @return the auth header from the request provided
      */
     public String getAuthHeaderFromHeader(HttpServletRequest request) {

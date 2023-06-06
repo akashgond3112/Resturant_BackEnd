@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin(origins = "${external.react.frontend.app.url}")
 public class ReviewController {
     @Autowired
     private ReviewService reviewService;
