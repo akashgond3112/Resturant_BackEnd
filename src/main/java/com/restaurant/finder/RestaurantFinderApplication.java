@@ -9,25 +9,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 public class RestaurantFinderApplication {
-
-	@Value("${external.react.frontend.app.url}")
-	private String corsUrl;
-
-	public static void main(String[] args) {
-		SpringApplication.run(RestaurantFinderApplication.class, args);
-	}
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer(){
-
-		return new WebMvcConfigurer() {
-			
-			@Override
-			public void addCorsMappings(CorsRegistry corsRegistry) {
-				corsRegistry.addMapping("/**")
-						.allowedOrigins(corsUrl);
-			}
-		};
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(RestaurantFinderApplication.class, args);
+    }
 
 }
