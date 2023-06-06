@@ -31,7 +31,6 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin("https://white-sand-038163010.3.azurestaticapps.net")
 public class LikesController {
 
     @Autowired
